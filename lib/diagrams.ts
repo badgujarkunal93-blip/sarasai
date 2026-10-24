@@ -65,7 +65,8 @@ export const MindMapZodSchema: z.ZodType<MindMapJSON> = z.lazy(() =>
 export function sanitizeMermaidLabel(raw: string): string {
   if (!raw) return 'Concept';
   return raw
-    .replace(/["'`]/g, "'")
+    .replace(/"/g, '')
+    .replace(/[`]/g, "'")
     .replace(/[<>{}\[\]\(\)]/g, ' ')
     .replace(/[$]/g, '')
     .replace(/\s+/g, ' ')
@@ -74,11 +75,11 @@ export function sanitizeMermaidLabel(raw: string): string {
 }
 
 export function sanitizeMermaidId(raw: string, fallbackIndex: number): string {
-  const cleaned = raw.replace(/[^a-zA-Z0-9_]/g, '');
-  if (!cleaned || /^[0-9]/.test(cleaned)) {
-    return `node_${fallbackIndex}`;
+  const cleaned = (raw || '').replace(/[^a-zA-Z0-9_]/g, '');
+  if (!cleaned || cleaned === 'n_') {
+    return `n_${fallbackIndex}`;
   }
-  return cleaned;
+  return cleaned.startsWith('n_') ? cleaned : `n_${cleaned}`;
 }
 
 /**
@@ -86,7 +87,7 @@ export function sanitizeMermaidId(raw: string, fallbackIndex: number): string {
  */
 export function convertFlowchartToMermaid(json: FlowchartJSON): string {
   if (!json || !Array.isArray(json.nodes) || json.nodes.length === 0) {
-    return 'graph TD\n  empty["No process flowchart available"]';
+    return 'graph TD\n  n_empty["No process flowchart available"]';
   }
 
   const lines: string[] = ['graph TD'];
@@ -96,7 +97,7 @@ export function convertFlowchartToMermaid(json: FlowchartJSON): string {
   json.nodes.forEach((n, idx) => {
     const validId = sanitizeMermaidId(n.id, idx);
     idMap.set(n.id, validId);
-    const label = sanitizeMermaidLabel(n.label || `Step ${idx + 1}`);
+    const label = sanitizeMermaidLabel(n.label || `Step ${idx + 1}`).replace(/"/g, '');
     lines.push(`  ${validId}["${label}"]`);
   });
 
@@ -107,7 +108,7 @@ export function convertFlowchartToMermaid(json: FlowchartJSON): string {
       const toId = idMap.get(e.to) || sanitizeMermaidId(e.to, 1);
       if (fromId && toId && fromId !== toId) {
         if (e.label && e.label.trim()) {
-          const edgeLabel = sanitizeMermaidLabel(e.label);
+          const edgeLabel = sanitizeMermaidLabel(e.label).replace(/"/g, '');
           lines.push(`  ${fromId} -->|"${edgeLabel}"| ${toId}`);
         } else {
           lines.push(`  ${fromId} --> ${toId}`);
