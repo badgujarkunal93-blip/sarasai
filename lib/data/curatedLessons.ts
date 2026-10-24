@@ -15,6 +15,20 @@ export interface CuratedLesson {
 
 export const CURATED_LESSONS: CuratedLesson[] = [
   {
+    id: 'ZWxLnP3HLoo',
+    youtubeId: 'ZWxLnP3HLoo',
+    title: 'Welcome to Hacktoberfest 2026! 🎃',
+    creator: 'Major League Hacking',
+    category: 'Open Source',
+    categoryTag: 'Demo Lesson',
+    duration: '20 min',
+    difficulty: 'Beginner',
+    thumbnail: 'https://i.ytimg.com/vi/ZWxLnP3HLoo/hqdefault.jpg',
+    url: 'https://www.youtube.com/watch?v=ZWxLnP3HLoo',
+    color: '#B8FF3D',
+    summary: 'Official Hacktoberfest walkthrough: learn open source, finding good first issues, git workflows, and pull requests.',
+  },
+  {
     id: 'aircAruvnKk',
     youtubeId: 'aircAruvnKk',
     title: 'But what is a neural network? | Deep learning, chapter 1',

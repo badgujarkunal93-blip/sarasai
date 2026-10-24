@@ -203,6 +203,13 @@ export default function DiscoverHomePage() {
   const [selectedCategory, setSelectedCategory] = useState('All Topics');
   const [dbVideos, setDbVideos] = useState<DBVideo[]>([]);
   const [loadingDb, setLoadingDb] = useState(true);
+  const [isDemoGuideVisible, setIsDemoGuideVisible] = useState(false);
+
+  const handleInsertDemoVideo = () => {
+    setInputQuery('https://www.youtube.com/watch?v=ZWxLnP3HLoo');
+    setIsDemoGuideVisible(true);
+    setErrorMessage(null);
+  };
 
   // Full History Modal View State
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
@@ -419,10 +426,29 @@ export default function DiscoverHomePage() {
               Turn any YouTube lesson into an interactive active-study session with checkpoint quizzes, physical-style recall cards, and distraction-free deep focus.
             </p>
 
+            {/* Quick Demo Action Pill */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={handleInsertDemoVideo}
+                className="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#FFFDF7] hover:bg-[#B8FF3D] border-2 border-[#111218] shadow-neo-sm hover:shadow-neo hover:-translate-y-0.5 text-xs font-black font-display uppercase tracking-wider text-[#111218] transition-all cursor-pointer group"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-[#111218] fill-[#B8FF3D] group-hover:rotate-12 transition-transform" />
+                <span>Try Demo Video</span>
+                <span className="bg-[#B8FF3D] group-hover:bg-[#FFFDF7] px-2 py-0.5 rounded-md border border-[#111218] text-[10px] font-black">
+                  Hacktoberfest 2026
+                </span>
+              </button>
+              <span className="text-xs text-[#636573] font-medium hidden sm:inline">
+                Click demo to auto-fill link &amp; segment
+              </span>
+            </div>
+
             {/* Central Learning Input Component */}
             <form
               onSubmit={(e) => {
                 e.preventDefault();
+                setIsDemoGuideVisible(false);
                 handleStartLearning(inputQuery);
               }}
               className="w-full pt-1"
@@ -435,11 +461,20 @@ export default function DiscoverHomePage() {
                 <input
                   type="text"
                   value={inputQuery}
-                  onChange={(e) => setInputQuery(e.target.value)}
+                  onChange={(e) => {
+                    setInputQuery(e.target.value);
+                    if (isDemoGuideVisible) setIsDemoGuideVisible(false);
+                  }}
                   placeholder="Paste a YouTube URL or type what you want to learn..."
                   disabled={isProcessing}
                   className="flex-1 bg-transparent border-0 px-2 py-2.5 text-xs sm:text-sm font-medium text-[#111218] placeholder-slate-400 focus:outline-none focus:ring-0 disabled:opacity-50"
                 />
+
+                {isDemoGuideVisible && (
+                  <div className="absolute -top-10 right-2 z-30 flex items-center gap-1.5 px-3 py-1 bg-[#111218] text-[#B8FF3D] border-2 border-[#B8FF3D] rounded-xl shadow-neo text-xs font-black animate-bounce whitespace-nowrap">
+                    <span>👇 Click Segment to start!</span>
+                  </div>
+                )}
 
                 <button
                   type="submit"
@@ -447,7 +482,9 @@ export default function DiscoverHomePage() {
                   className={`px-5 py-2.5 text-xs sm:text-sm font-black font-display uppercase tracking-wider rounded-xl border-2 border-[#111218] transition-all flex items-center gap-1.5 flex-shrink-0 ${
                     !inputQuery.trim() || isProcessing
                       ? 'bg-slate-200 text-slate-400 opacity-50 cursor-not-allowed'
-                      : 'bg-[#B8FF3D] hover:bg-[#C6FF57] text-[#111218] shadow-neo hover:-translate-y-0.5 animate-pulse cursor-pointer'
+                      : isDemoGuideVisible
+                      ? 'bg-[#B8FF3D] hover:bg-[#C6FF57] text-[#111218] shadow-neo-lg scale-102 ring-4 ring-[#B8FF3D]/50 animate-pulse cursor-pointer'
+                      : 'bg-[#B8FF3D] hover:bg-[#C6FF57] text-[#111218] shadow-neo hover:-translate-y-0.5 cursor-pointer'
                   }`}
                 >
                   {isProcessing ? (
@@ -457,7 +494,7 @@ export default function DiscoverHomePage() {
                     </>
                   ) : (
                     <>
-                      <span>Start</span>
+                      <span>{inputQuery.includes('ZWxLnP3HLoo') || isDemoGuideVisible ? 'Segment Video' : 'Segment'}</span>
                       <ArrowRight className="w-4 h-4 text-[#111218]" />
                     </>
                   )}

@@ -1,6 +1,308 @@
 {
   "videos": [
     {
+      "id": "demo-hacktoberfest-2026",
+      "youtube_video_id": "ZWxLnP3HLoo",
+      "title": "Welcome to Hacktoberfest 2026! 🎃",
+      "channel": "Major League Hacking",
+      "duration_seconds": 1205,
+      "thumbnail_url": "https://i.ytimg.com/vi/ZWxLnP3HLoo/hqdefault.jpg",
+      "status": "ready",
+      "error_reason": null,
+      "created_at": "2026-10-24T09:08:25.212Z",
+      "segments": [
+        {
+          "id": "seg-demo-1",
+          "video_id": "demo-hacktoberfest-2026",
+          "order_index": 0,
+          "title": "Introduction to Hacktoberfest & Open Source Spirit",
+          "summary": "Celebrating global open source software, community collaboration, and understanding the mission of Hacktoberfest.",
+          "start_seconds": 0,
+          "end_seconds": 280,
+          "quiz_questions": [
+            {
+              "id": "q-demo-1-1",
+              "segment_id": "seg-demo-1",
+              "question": "What is the primary mission of Hacktoberfest?",
+              "options": "[\"To encourage developers worldwide to contribute meaningfully to open source software\",\"To compete in high-stakes commercial software sales\",\"To deprecate legacy programming languages\",\"To replace version control systems with cloud drives\"]",
+              "correct_answer": "To encourage developers worldwide to contribute meaningfully to open source software",
+              "explanation": "Hacktoberfest is a month-long celebration organized to promote open source participation and community mentorship."
+            },
+            {
+              "id": "q-demo-1-2",
+              "segment_id": "seg-demo-1",
+              "question": "Who can participate in Hacktoberfest?",
+              "options": "[\"Everyone from beginners to seasoned engineers across all skill levels\",\"Only full-time computer science professors\",\"Only certified systems architects\",\"Exclusively proprietary software maintainers\"]",
+              "correct_answer": "Everyone from beginners to seasoned engineers across all skill levels",
+              "explanation": "Hacktoberfest is inclusive and open to anyone interested in learning and giving back to open source."
+            },
+            {
+              "id": "q-demo-1-3",
+              "segment_id": "seg-demo-1",
+              "question": "What makes open source software vital to the developer ecosystem?",
+              "options": "[\"Shared knowledge, transparency, and collaborative global problem solving\",\"It prevents code from ever being inspected by external peers\",\"It requires all software to be executed without compilation\",\"It restricts contributions to a single author\"]",
+              "correct_answer": "Shared knowledge, transparency, and collaborative global problem solving",
+              "explanation": "Open source thrives on public inspection, community peer review, and cooperative improvement."
+            },
+            {
+              "id": "q-demo-1-4",
+              "segment_id": "seg-demo-1",
+              "question": "What is the first step before writing any code in an open source project?",
+              "options": "[\"Read the repository README and CONTRIBUTING guidelines carefully\",\"Force push to the main branch immediately\",\"Delete existing issue templates\",\"Email the core maintainers privately\"]",
+              "correct_answer": "Read the repository README and CONTRIBUTING guidelines carefully",
+              "explanation": "Every repository maintains contribution standards, style guides, and PR requirements in its documentation."
+            }
+          ]
+        },
+        {
+          "id": "seg-demo-2",
+          "video_id": "demo-hacktoberfest-2026",
+          "order_index": 1,
+          "title": "Finding Repositories & Good First Issues",
+          "summary": "How to discover welcoming repositories on GitHub, filter by beginner-friendly labels, and navigate project roadmaps.",
+          "start_seconds": 280,
+          "end_seconds": 620,
+          "quiz_questions": [
+            {
+              "id": "q-demo-2-1",
+              "segment_id": "seg-demo-2",
+              "question": "Which GitHub label is most helpful for finding beginner-friendly tasks?",
+              "options": "[\"good first issue / help wanted\",\"critical-production-outage\",\"wontfix\",\"do-not-merge\"]",
+              "correct_answer": "good first issue / help wanted",
+              "explanation": "Maintainers tag approachable, well-scoped onboarding tasks with \"good first issue\" and \"help wanted\"."
+            },
+            {
+              "id": "q-demo-2-2",
+              "segment_id": "seg-demo-2",
+              "question": "Why should you check whether a repository has the \"hacktoberfest\" topic?",
+              "options": "[\"Pull requests only count toward Hacktoberfest in participating or opt-in repositories\",\"It unlocks secret repository themes\",\"It automatically merges your pull request without review\",\"It bypasses automated linting\"]",
+              "correct_answer": "Pull requests only count toward Hacktoberfest in participating or opt-in repositories",
+              "explanation": "Projects must have the hacktoberfest topic or maintainers must label PRs with hacktoberfest-accepted."
+            },
+            {
+              "id": "q-demo-2-3",
+              "segment_id": "seg-demo-2",
+              "question": "What is the best way to claim an open issue before working on it?",
+              "options": "[\"Leave a polite comment asking the maintainer to assign it to you\",\"Open a pull request immediately with no description\",\"Fork the repository and report the maintainer\",\"Copy the issue text into a new issue\"]",
+              "correct_answer": "Leave a polite comment asking the maintainer to assign it to you",
+              "explanation": "Communicating in the issue thread prevents duplicate effort and ensures the maintainer welcomes your solution."
+            },
+            {
+              "id": "q-demo-2-4",
+              "segment_id": "seg-demo-2",
+              "question": "What should you verify in an issue description before starting?",
+              "options": "[\"Clear acceptance criteria, expected behavior, and reproduction steps\",\"That no tests are present in the repository\",\"That the repository has zero stars\",\"That the code was written in assembly\"]",
+              "correct_answer": "Clear acceptance criteria, expected behavior, and reproduction steps",
+              "explanation": "Clear criteria ensure your PR directly addresses what the maintainer intends to solve."
+            }
+          ]
+        },
+        {
+          "id": "seg-demo-3",
+          "video_id": "demo-hacktoberfest-2026",
+          "order_index": 2,
+          "title": "Submitting High-Quality PRs & Avoiding Spam",
+          "summary": "Setting up local forks, creating descriptive git branches, committing clean changes, and adhering to review etiquette.",
+          "start_seconds": 620,
+          "end_seconds": 940,
+          "quiz_questions": [
+            {
+              "id": "q-demo-3-1",
+              "segment_id": "seg-demo-3",
+              "question": "What is the correct git workflow when contributing to an external repository?",
+              "options": "[\"Fork the repo, clone your fork, create a feature branch, and submit a PR\",\"Commit directly to upstream main without a fork\",\"Submit pull requests from personal email attachments\",\"Clone without forking and push with --force\"]",
+              "correct_answer": "Fork the repo, clone your fork, create a feature branch, and submit a PR",
+              "explanation": "The standard GitHub workflow uses an isolated fork and dedicated feature branch for PR reviews."
+            },
+            {
+              "id": "q-demo-3-2",
+              "segment_id": "seg-demo-3",
+              "question": "What constitutes an invalid or \"spam\" pull request in Hacktoberfest?",
+              "options": "[\"Automated typo changes across multiple repos, blank edits, or superficial whitespace churn\",\"A well-documented bug fix with passing unit tests\",\"An accurate documentation overhaul explaining setup steps\",\"A feature addition meeting maintainer guidelines\"]",
+              "correct_answer": "Automated typo changes across multiple repos, blank edits, or superficial whitespace churn",
+              "explanation": "Spam PRs burden maintainers and lead to disqualification from Hacktoberfest."
+            },
+            {
+              "id": "q-demo-3-3",
+              "segment_id": "seg-demo-3",
+              "question": "Why should every Pull Request include a clear title and description?",
+              "options": "[\"It helps maintainers understand the context, changes made, and verification steps\",\"It is required by the Linux kernel compiler\",\"It hides the diff from automated security tools\",\"It decreases repository commit count\"]",
+              "correct_answer": "It helps maintainers understand the context, changes made, and verification steps",
+              "explanation": "A descriptive PR explanation speeds up code review and demonstrates professionalism."
+            },
+            {
+              "id": "q-demo-3-4",
+              "segment_id": "seg-demo-3",
+              "question": "How should you respond when a maintainer requests changes on your PR?",
+              "options": "[\"Review the feedback constructively, push updates to your branch, and reply politely\",\"Close your GitHub account immediately\",\"Open 5 duplicate pull requests hoping one gets approved\",\"Ignore the comments and demand a merge\"]",
+              "correct_answer": "Review the feedback constructively, push updates to your branch, and reply politely",
+              "explanation": "Iterating on feedback is the heart of open source peer review and collaborative growth."
+            }
+          ]
+        },
+        {
+          "id": "seg-demo-4",
+          "video_id": "demo-hacktoberfest-2026",
+          "order_index": 3,
+          "title": "Digital Badges, Tree Planting & Community Rewards",
+          "summary": "Tracking pull request validation status, earning official digital badges, contributing to reforestation, and celebrating completion.",
+          "start_seconds": 940,
+          "end_seconds": 1205,
+          "quiz_questions": [
+            {
+              "id": "q-demo-4-1",
+              "segment_id": "seg-demo-4",
+              "question": "How many accepted pull requests are required to complete Hacktoberfest?",
+              "options": "[\"4 high-quality accepted pull requests\",\"100 pull requests\",\"1 pull request of any kind\",\"50 commits to your own profile\"]",
+              "correct_answer": "4 high-quality accepted pull requests",
+              "explanation": "The classic Hacktoberfest challenge requires 4 accepted PRs in participating repositories during October."
+            },
+            {
+              "id": "q-demo-4-2",
+              "segment_id": "seg-demo-4",
+              "question": "What is the review holding period before an accepted PR officially counts?",
+              "options": "[\"A 7-day review window to ensure quality and prevent spam reversals\",\"30 days of continuous server uptime\",\"Zero seconds — immediate instant counting\",\"6 months of community voting\"]",
+              "correct_answer": "A 7-day review window to ensure quality and prevent spam reversals",
+              "explanation": "A 7-day maturity period gives maintainers time to mark any spam before rewards are issued."
+            },
+            {
+              "id": "q-demo-4-3",
+              "segment_id": "seg-demo-4",
+              "question": "What environmental reward option is offered to participants?",
+              "options": "[\"Having a tree planted in your name through global conservation partnerships\",\"A gas-powered lawnmower voucher\",\"A physical coal token\",\"A plastic water bottle\"]",
+              "correct_answer": "Having a tree planted in your name through global conservation partnerships",
+              "explanation": "Hacktoberfest partners with environmental initiatives to plant trees on behalf of contributors."
+            },
+            {
+              "id": "q-demo-4-4",
+              "segment_id": "seg-demo-4",
+              "question": "What is the true long-term reward of participating in Hacktoberfest?",
+              "options": "[\"Gaining real-world collaborative experience, building a public portfolio, and joining a global community\",\"Accumulating stickers that never get used\",\"Replacing software engineering with automated bots\",\"Winning an exclusive gaming console\"]",
+              "correct_answer": "Gaining real-world collaborative experience, building a public portfolio, and joining a global community",
+              "explanation": "The greatest reward is building lifelong developer skills and contributing to tools millions rely upon."
+            }
+          ]
+        }
+      ],
+      "flashcards": [
+        {
+          "id": "fc-demo-1",
+          "video_id": "demo-hacktoberfest-2026",
+          "front": "What is Hacktoberfest?",
+          "back": "An annual month-long global event organized by DigitalOcean and MLH to celebrate open source through quality contributions.",
+          "mastered": false,
+          "created_at": "2026-10-24T09:08:25.212Z"
+        },
+        {
+          "id": "fc-demo-2",
+          "video_id": "demo-hacktoberfest-2026",
+          "front": "What is a Pull Request (PR)?",
+          "back": "A formal proposal to merge code changes from your feature branch/fork into the upstream target repository.",
+          "mastered": false,
+          "created_at": "2026-10-24T09:08:25.213Z"
+        },
+        {
+          "id": "fc-demo-3",
+          "video_id": "demo-hacktoberfest-2026",
+          "front": "What does the \"good first issue\" label signify?",
+          "back": "A well-scoped task curated by maintainers specifically for new contributors joining the project.",
+          "mastered": false,
+          "created_at": "2026-10-24T09:08:25.213Z"
+        },
+        {
+          "id": "fc-demo-4",
+          "video_id": "demo-hacktoberfest-2026",
+          "front": "What is a Git Fork vs Git Clone?",
+          "back": "A Fork creates a remote copy on your GitHub account; a Clone downloads a local working copy to your computer.",
+          "mastered": false,
+          "created_at": "2026-10-24T09:08:25.213Z"
+        },
+        {
+          "id": "fc-demo-5",
+          "video_id": "demo-hacktoberfest-2026",
+          "front": "What is the 7-day review maturity period in Hacktoberfest?",
+          "back": "A 7-day grace period where PRs remain pending so maintainers can flag spam or issues before points finalize.",
+          "mastered": false,
+          "created_at": "2026-10-24T09:08:25.213Z"
+        },
+        {
+          "id": "fc-demo-6",
+          "video_id": "demo-hacktoberfest-2026",
+          "front": "Why should you create a separate feature branch for each PR?",
+          "back": "It isolates your changes, keeps your main branch synchronized with upstream, and allows multiple independent PRs.",
+          "mastered": false,
+          "created_at": "2026-10-24T09:08:25.213Z"
+        }
+      ],
+      "notes": [
+        {
+          "id": "note-demo-1",
+          "video_id": "demo-hacktoberfest-2026",
+          "segment_id": "seg-demo-1",
+          "section_type": "overview",
+          "title": "Hacktoberfest 2026 Kickoff & Mission",
+          "content": "Hacktoberfest celebrates global open source collaboration. Every October, developers of all skill levels are invited to contribute to participating repositories, practice git workflows, and support the open web.",
+          "source_start_seconds": 0,
+          "source_end_seconds": 280,
+          "order_index": 0,
+          "created_at": "2026-10-24T09:08:25.213Z",
+          "updated_at": "2026-10-24T09:08:25.213Z"
+        },
+        {
+          "id": "note-demo-2",
+          "video_id": "demo-hacktoberfest-2026",
+          "segment_id": "seg-demo-2",
+          "section_type": "deep_dive",
+          "title": "Discovering Welcoming Projects & Good First Issues",
+          "content": "Filter repositories by the topic \"hacktoberfest\" and look for issues tagged \"good first issue\" or \"help wanted\". Always comment on the issue before starting work to avoid duplicate effort.",
+          "source_start_seconds": 280,
+          "source_end_seconds": 620,
+          "order_index": 1,
+          "created_at": "2026-10-24T09:08:25.213Z",
+          "updated_at": "2026-10-24T09:08:25.213Z"
+        },
+        {
+          "id": "note-demo-3",
+          "video_id": "demo-hacktoberfest-2026",
+          "segment_id": "seg-demo-3",
+          "section_type": "deep_dive",
+          "title": "Pull Request Quality & Anti-Spam Guidelines",
+          "content": "Maintain high standards: never submit automated whitespace changes or trivial typo PRs across unrelated repos. Follow repository CONTRIBUTING guides, run tests locally, and write informative PR summaries.",
+          "source_start_seconds": 620,
+          "source_end_seconds": 940,
+          "order_index": 2,
+          "created_at": "2026-10-24T09:08:25.213Z",
+          "updated_at": "2026-10-24T09:08:25.213Z"
+        },
+        {
+          "id": "note-demo-4",
+          "video_id": "demo-hacktoberfest-2026",
+          "segment_id": "seg-demo-4",
+          "section_type": "summary",
+          "title": "Rewards, Badges & Long-Term Open Source Journey",
+          "content": "Completing 4 accepted PRs earns official digital badges and the opportunity to plant a tree with conservation partners. Beyond swag, the real value lies in building real-world collaboration skills.",
+          "source_start_seconds": 940,
+          "source_end_seconds": 1205,
+          "order_index": 3,
+          "created_at": "2026-10-24T09:08:25.213Z",
+          "updated_at": "2026-10-24T09:08:25.213Z"
+        }
+      ],
+      "projects": [
+        {
+          "id": "proj-demo-1",
+          "video_id": "demo-hacktoberfest-2026",
+          "title": "Your First Verified Open Source Contribution",
+          "problem_statement": "Identify an active open source repository, fork it, fix a documented issue or add a test suite, and successfully merge your pull request.",
+          "difficulty": "Beginner",
+          "why_it_fits": "Applies all git, branching, and pull request hygiene principles taught in the Hacktoberfest masterclass.",
+          "skills_practiced": "[\"Git Branching\", \"Pull Requests\", \"Code Review\", \"Open Source Etiquette\"]",
+          "milestones": "[{\"title\":\"Fork and clone target repository with upstream remotes configured\",\"order\":1,\"completed\":false},{\"title\":\"Create feature branch and implement solution with local unit tests passing\",\"order\":2,\"completed\":false},{\"title\":\"Submit pull request with comprehensive problem statement and verification steps\",\"order\":3,\"completed\":false},{\"title\":\"Iterate on maintainer review feedback until PR is officially approved and merged\",\"order\":4,\"completed\":false}]",
+          "created_at": "2026-10-24T09:08:25.213Z"
+        }
+      ]
+    },
+    {
       "id": "cmsugs0s40000ukghlvir222q",
       "youtube_video_id": "aircAruvnKk",
       "title": "But what is a neural network? | Deep learning, chapter 1",

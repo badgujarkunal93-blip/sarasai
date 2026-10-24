@@ -154,22 +154,32 @@ export function Navbar() {
                 onChange={(e) => setUrlInput(e.target.value)}
                 placeholder="Paste YouTube video to segment..."
                 disabled={isIngesting}
-                className="w-full bg-transparent border-0 py-2 pr-24 text-xs font-medium text-[#111218] placeholder-slate-500 focus:outline-none focus:ring-0 disabled:opacity-50"
+                className="w-full bg-transparent border-0 py-2 pr-32 text-xs font-medium text-[#111218] placeholder-slate-500 focus:outline-none focus:ring-0 disabled:opacity-50"
               />
-              <button
-                type="submit"
-                disabled={isIngesting || !urlInput.trim()}
-                className="absolute right-1 px-3 py-1 bg-[#B8FF3D] hover:bg-[#C6FF57] text-[#111218] border-1.5 border-[#111218] text-xs font-bold font-display rounded-lg flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
-              >
-                {isIngesting ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <>
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Segment</span>
-                  </>
-                )}
-              </button>
+              <div className="absolute right-1 flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setUrlInput('https://www.youtube.com/watch?v=ZWxLnP3HLoo')}
+                  title="Insert Hacktoberfest Demo URL"
+                  className="px-2 py-1 bg-[#FFFDF7] hover:bg-[#B8FF3D] border border-[#111218] text-[10px] font-black rounded-lg text-[#111218] transition-all"
+                >
+                  Demo
+                </button>
+                <button
+                  type="submit"
+                  disabled={isIngesting || !urlInput.trim()}
+                  className="px-2.5 py-1 bg-[#B8FF3D] hover:bg-[#C6FF57] text-[#111218] border-1.5 border-[#111218] text-xs font-bold font-display rounded-lg flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
+                >
+                  {isIngesting ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <>
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Segment</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
 
             {/* Notification Toast */}

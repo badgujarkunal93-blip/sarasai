@@ -43,7 +43,7 @@ export default function SarasLandingPage() {
   const [activeLoopStep, setActiveLoopStep] = useState<number>(0);
   const [simulationState, setSimulationState] = useState<'idle' | 'running' | 'completed'>('idle');
   const [simStep, setSimStep] = useState<number>(0);
-  const [simUrl, setSimUrl] = useState<string>('https://www.youtube.com/watch?v=kqtD5dpn9C8');
+  const [simUrl, setSimUrl] = useState<string>('https://www.youtube.com/watch?v=ZWxLnP3HLoo');
 
   // Loop through signature learning loop steps automatically
   useEffect(() => {
