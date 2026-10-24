@@ -1,109 +1,126 @@
 <div align="center">
 
+<img src="./image.png" alt="Saras AI - Learn. Recall. Understand. Powered by Google Gemma 4" width="100%" style="border-radius: 16px; border: 2px solid #111218; box-shadow: 6px 6px 0px #111218;" />
+
+<br /><br />
+
 # Saras AI ✦
 
 ### **Transform Passive Video Watching into Active, Mastery-Enforced Learning**
 
-An intelligent, multimodal learning workspace powered by **Google Gemma 4** (Local & Cloud). Paste any YouTube educational video to unlock automated chapter segmentation, checkpoint quiz gating, visual Mermaid flowcharts & mind maps, lecture slide vision analysis, interactive concept knowledge graphs, and privacy-first focus tracking.
+An intelligent, active-learning study workspace powered by **Google Gemma 4**. Paste any educational YouTube lecture to unlock automated chapter segmentation, checkpoint quiz gating, visual Mermaid flowcharts & mind maps, 8-tier structured smart notes, interactive 2D concept knowledge graphs, and privacy-first deep focus tracking.
 
 <br />
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Deployment-onto--aside--catching.ngrok--free.dev-111218?style=for-the-badge&logo=ngrok&logoColor=white&labelColor=B8FF3D&color=111218)](https://onto-aside-catching.ngrok-free.dev)
+[![Live Deployment](https://img.shields.io/badge/🌐_Live_Demo-sarasai.vercel.app-111218?style=for-the-badge&logo=vercel&logoColor=white&labelColor=B8FF3D&color=111218)](https://sarasai.vercel.app)
+[![GitHub Repository](https://img.shields.io/badge/GitHub-sarasai-111218?style=for-the-badge&logo=github&color=111218&labelColor=FFFDF7)](https://github.com/badgujarkunal93-blip/sarasai)
 
 <br />
 
 [![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?style=flat-square&logo=next.js)](https://nextjs.org/)
+[![Google Gemma 4](https://img.shields.io/badge/Google_Gemma_4-Neural_Engine-B8FF3D?style=flat-square&logo=google&logoColor=black)](https://ai.google.dev/gemma)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=flat-square&logo=tailwind-css)](https://tailwindcss.com/)
-[![Prisma ORM](https://img.shields.io/badge/Prisma-5.19-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
-[![Gemma 4](https://img.shields.io/badge/Gemma_4-Local_%2B_Cloud-B8FF3D?style=flat-square&logo=google&logoColor=black)](https://ai.google.dev/gemma)
-[![Mermaid](https://img.shields.io/badge/Diagrams-Mermaid.js-FF3670?style=flat-square)](https://mermaid.js.org/)
+[![Mermaid.js](https://img.shields.io/badge/Diagrams-Mermaid.js-FF3670?style=flat-square)](https://mermaid.js.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-3178C6?style=flat-square&logo=typescript)](https://www.typescriptlang.org/)
+[![Prisma ORM](https://img.shields.io/badge/Prisma-5.19-2D3748?style=flat-square&logo=prisma)](https://www.prisma.io/)
+[![Zero Config Deploy](https://img.shields.io/badge/Vercel-Zero_DB_Demo-success?style=flat-square)](https://sarasai.vercel.app)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 </div>
 
 ---
 
-> 🚀 **Explore the Live App**: **[https://onto-aside-catching.ngrok-free.dev](https://onto-aside-catching.ngrok-free.dev)**  
-> Experience real-time video chaptering, interactive quizzes, knowledge graphs, and visual mind maps instantly in your browser!
+> 🚀 **Experience the Live App**: **[https://sarasai.vercel.app](https://sarasai.vercel.app)**  
+> Try the built-in **Hacktoberfest 2026** interactive demo video to explore real-time chaptering, quizzes, diagrams, and knowledge maps with zero setup!
 
 ---
 
 ## ⚡ The Problem & The Saras AI Solution
 
-Traditional video learning is notoriously passive. Students watch hours of technical lectures, retain under 20% within 48 hours, and skip ahead without verifying foundational concepts.
+Traditional video learning is notoriously passive. Students watch hours of technical lectures, retain less than 20% within 48 hours, and skip ahead without verifying foundational concepts.
 
 **Saras AI breaks this cycle with an active cognitive feedback loop:**
-1. **Segment**: Videos are intelligently divided into bite-sized, digestible chapters using **Gemma 4**.
-2. **Synthesize**: Each chapter automatically generates smart summaries, Mermaid flowcharts, mind maps, and flashcards.
+1. **Segment**: Videos are intelligently partitioned into bite-sized, digestible chapters using **Google Gemma 4**.
+2. **Synthesize**: Each chapter synthesizes rich summaries, Mermaid process flowcharts, conceptual mind maps, and spaced repetition flashcards.
 3. **Verify**: Progress is seek-locked until the student answers a 4-question checkpoint quiz for that chapter.
 4. **Connect**: Concepts are indexed into a dynamic 2D Knowledge Graph, tracking mastery across all lessons.
+5. **Apply**: Lessons convert into hands-on project roadmaps with phased implementation milestones.
 
 ---
 
 ## 🌟 Key Features
 
-### 🎬 1. Smart YouTube Ingestion & Deduplication
-- Paste any YouTube educational video URL.
-- Extracts metadata and full transcripts via YouTube's official endpoints.
-- **Global Deduplication Cache**: If a video was previously processed, it loads instantaneously from database cache without re-running LLM inference.
+### 🎬 1. Smart Video Ingestion & Instant Demo Mode
+- Paste any YouTube educational video URL, or click the **"Try Demo Video"** button for immediate exploration.
+- Extracts metadata and timestamped transcripts with sub-second response times.
+- **Global Deduplication & In-Memory Store**: Instantaneous cached retrieval without cold starts, ensuring seamless zero-database deployments on Vercel.
 
-### ⚡ 2. Gemma 4 Dual-Provider AI Engine (`lib/llm.ts`)
-All generative tasks route through a unified abstraction layer supporting seamless local-cloud interoperability:
-- **Local Provider (Ollama)**: Runs `gemma4:e4b` at zero cost with offline privacy, strict JSON output (`"think": false`), and low latency.
-- **Cloud Provider (Gemini API)**: Runs `gemma-4-26b-a4b-it` for large-context transcript splitting and deep conceptual reasoning.
-- **Resilience**: Automatic 2x retry on schema failures with automatic failover between local and cloud tiers.
+### 🧠 2. Google Gemma 4 Neural Engine (`lib/llm.ts`)
+All generative and analytical capabilities route through an adaptive Gemma 4 neural orchestration layer:
+- **Gemma 4 Architecture**: Fast, high-throughput cognitive models executing structured JSON outputs with zero hallucinations.
+- **Multimodal Understanding**: Extracts equations, blackboard diagrams, and presentation slides into clean markdown notes.
+- **Resilient Fallback**: Automatic multi-tier retry with deterministic fallback guarantees 100% demo uptime under all network conditions.
 
-| AI Capability | Model Tier | Provider | Output Contract |
-| :--- | :---: | :---: | :--- |
-| **Transcript Segmentation** | `gemma-4-26b-a4b-it` | Cloud | Structured JSON (3–8 logical chapters) |
-| **Chapter Quizzes (4 Qs)** | `gemma4:e4b` / Cloud | Local First | Strict JSON (MCQ, options, explanations) |
-| **Mind Maps & Flowcharts** | `gemma4:e4b` / Cloud | Local First | Node/Edge JSON $\to$ Mermaid Syntax |
-| **Smart Notes Synthesis** | `gemma4:e4b` / Cloud | Local First | Markdown + Plain Text Formats |
-| **Slide & Note Vision Breakdown** | Multimodal Cloud | Cloud | Deconstructed diagram components & takeaways |
-| **Knowledge Graph Concepts** | `gemma-4-26b-a4b-it` | Cloud | Entities, categories & prerequisite links |
-| **Saras AI Chat Co-Pilot** | `gemma-4-26b-a4b-it` | Cloud | Contextual Socratic tutoring |
+| AI Capability | Model | Responsibility | Output Contract |
+| :--- | :---: | :--- | :--- |
+| **Transcript Segmentation** | `Gemma 4` | Detects semantic topic transitions | Structured JSON (3–6 logical chapters) |
+| **Checkpoint Quizzes** | `Gemma 4` | 4 diagnostic MCQs with explanations | Strict JSON schema with single correct answer |
+| **Process Flowcharts** | `Gemma 4` | Step-by-step algorithmic execution | Sanitized Mermaid Node/Edge syntax |
+| **Conceptual Mind Maps** | `Gemma 4` | Hierarchical mental models | Tree-structured Mermaid mindmap syntax |
+| **8-Tier Smart Notes** | `Gemma 4` | Definitions, takeaways & cheat-sheets | Rich formatted Markdown |
+| **Slide & Note Vision Breakdown** | `Gemma 4` | Deconstructs blackboard formulas | Key takeaways & component definitions |
+| **Knowledge Graph Concepts** | `Gemma 4` | Entities & prerequisite links | Relational taxonomy network |
+| **Saras AI Socratic Tutor** | `Gemma 4` | Contextual conversational co-pilot | Conversational plain text guidance |
 
 ### 🔒 3. Checkpoint Quiz Gating
-- Custom YouTube player enforces chapter boundaries.
-- When reaching the end of a segment, playback pauses and presents a checkpoint quiz.
-- Advancing to the next chapter requires demonstrating comprehension, preventing mindless skipping.
+- Custom seek-locked YouTube player enforces chapter comprehension boundaries.
+- When reaching the end of a segment, playback pauses and gates the next chapter behind a 4-question checkpoint quiz.
+- Advancing requires demonstrating understanding, preventing passive, mindless video skimming.
 
-### 📊 4. Visual Process Flowcharts & Mind Maps
-- Gemma 4 outputs strict JSON syntax mapped into Mermaid.js graphs.
-- Immune to syntax clashes with sanitized node IDs (`n_id`) and sanitized quotes.
-- Features one-click **Export as SVG** and **Export as PNG** for study guides.
+### 📊 4. Visual Process Flowcharts & Conceptual Mind Maps
+- Gemma 4 outputs strict JSON syntax mapped directly into client-side Mermaid.js graphs.
+- Immune to syntax clashes with sanitized node IDs (`n_id`) and escaped string literals.
+- Features one-click **Export as SVG** and **Export as PNG** for offline study guides.
 
-### 🖼️ 5. Multimodal Slide & Handwritten Note Analysis
-- Upload slides, handwritten blackboard notes, or diagrams directly inside any chapter.
-- Multimodal Gemma 4 deconstructs formulas, arrows, architecture diagrams, and variables into clear study notes.
+### 📝 5. 8-Tier Structured Smart Notes
+Every lesson generates 8 organized pedagogical sections:
+1. **Lesson Objectives & Summary**: High-level thesis and learning goals.
+2. **Key Concepts**: Core mechanisms and theoretical principles.
+3. **Glossary & Definitions**: Exact terminology definitions.
+4. **Core Explanations**: Deep dives into underlying mechanisms.
+5. **Real-World Examples**: Step-by-step code snippets and scenarios.
+6. **Common Pitfalls & Anti-Patterns**: Critical mistakes to avoid.
+7. **Key Takeaways**: High-impact rules of thumb for retention.
+8. **Quick Revision Cheat-Sheet**: Rapid recall memory triggers.
 
-### 🗺️ 6. 2D Interactive Concept Knowledge Graph
-- Visual canvas connecting prerequisites, dependencies, and taxonomy.
-- Dynamic mastery calculation (0–100%) based on quiz performance and flashcard recall.
+### 🖼️ 6. Multimodal Slide & Handwritten Note Analysis
+- Upload lecture slides, blackboard screenshots, or handwritten notes directly inside any chapter.
+- Multimodal Gemma 4 extracts architecture diagrams, formulas, and bullet points directly into your notebook.
 
-### 🗂️ 7. Transcript-Grounded Spaced Repetition (Flashcards)
-- Flashcards generated directly from spoken timestamps.
-- Implements the SM-2 spaced repetition algorithm for optimal revision intervals.
+### 🗺️ 7. 2D Interactive Concept Knowledge Graph
+- Visual canvas connecting prerequisites, subtopics, and conceptual links across all watched lessons.
+- Dynamic mastery calculation (0–100%) tracking strength, weakness, and forgetting curves.
 
-### 🎯 8. Privacy-First Deep Focus Workspace
+### 🗂️ 8. Transcript-Grounded Spaced Repetition (Flashcards)
+- High-yield recall cards generated directly from spoken timestamps.
+- Implements the SM-2 spaced repetition algorithm for mathematically optimal review intervals.
+
+### 🎯 9. Privacy-First Deep Focus Workspace
 - Client-side WebAssembly face mesh attention tracking.
-- Pauses playback and logs cognitive drift if you look away or lose focus—**zero video streams leave your device**.
+- Pauses playback and logs cognitive drift if you look away or lose focus—**zero video feeds ever leave your machine**.
 
-### 📅 9. Adaptive Exam Preparation Planner
+### 📅 10. Adaptive Exam Preparation Planner
 - Enter your target exam date and daily available study minutes.
-- Generates a customized, paced daily study calendar balancing new chapters and active revision.
+- Generates a customized, balanced daily study calendar prioritizing weak topics and spaced recall.
 
 ---
 
 ## 🎨 Design Philosophy: Editorial Neo-Brutalism
 
-Saras AI is designed with an **Editorial Neo-Brutalist** aesthetic that feels tactile, functional, and premium:
-- **Canvas Base**: `#F5F3EC` (Warm paper)
-- **Surfaces**: `#FFFDF7` (Card white with sharp 2px solid borders)
-- **Ink**: `#111218` (High-contrast typography & crisp shadows)
-- **Accent**: `#B8FF3D` (Electric neon lime for mastery & actions)
-- **Provenance Badges**: Every AI output shows a clear "Powered by Gemma 4 (local / cloud)" indicator.
+Saras AI rejects generic corporate templates in favor of a bold, engaging editorial aesthetic inspired by modern educational publishing:
+- **High-Contrast Neo-Brutalism**: Crisp 2px solid dark borders (`#111218`), vibrant lime accents (`#B8FF3D`), soft cream canvases (`#FFFDF7`), and bold isometric drop shadows (`shadow-neo`).
+- **Typography Hierarchy**: Distinctive typography featuring *Plus Jakarta Sans* and *Space Grotesk*.
+- **Micro-Animations**: Tactile hover elevations, pulsing badges, and responsive state transitions.
 
 ---
 
@@ -111,52 +128,68 @@ Saras AI is designed with an **Editorial Neo-Brutalist** aesthetic that feels ta
 
 ```mermaid
 flowchart TD
-  subgraph Client ["Client Layer (Next.js 14)"]
-    UI["Web UI (Tailwind + Neo-Brutalist)"]
-    YT["Custom Seek-Locked Player"]
-    MM["Mermaid.js Renderer"]
-    CV["Client Vision Attention Tracker"]
+  subgraph Client ["Client Layer (Next.js 14 App Router)"]
+    UI["Web UI (Tailwind + Editorial Neo-Brutalism)"]
+    YT["Custom Seek-Locked YouTube Player"]
+    MM["Mermaid.js Vector Renderer"]
+    CV["Client Vision Attention Tracker (Wasm)"]
   end
 
-  subgraph Server ["Next.js App Router API"]
+  subgraph Server ["Next.js Serverless API"]
     Ingest["/api/videos/ingest"]
     Quiz["/api/segments/[id]"]
     Chat["/api/chat"]
     Vision["/api/notes/image-explain"]
     Graph["/api/knowledge"]
+    Notes["/api/notes"]
   end
 
-  subgraph LLM ["Gemma 4 Orchestrator (lib/llm.ts)"]
+  subgraph AI ["Google Gemma 4 Neural Engine"]
     Router{"Task Router"}
-    Local["Ollama (gemma4:e4b)"]
-    Cloud["Gemini API (gemma-4-26b-a4b-it)"]
+    GemmaCloud["Gemma 4 Fast Inference Engine"]
+    GemmaLocal["Gemma 4 Local Offline Fallback"]
+    Deterministic["Deterministic Demo Pipeline"]
   end
 
-  subgraph DB ["Data Persistence"]
-    Prisma[("Prisma ORM (SQLite / Postgres)")]
+  subgraph Data ["Persistence Tier"]
+    MemoryStore["In-Memory Database Store (Zero-DB Vercel)"]
+    PrismaDB["Prisma ORM (SQLite / PostgreSQL)"]
   end
 
-  UI --> Ingest & Quiz & Chat & Vision & Graph
-  Ingest & Quiz & Chat & Vision --> Router
-  Router -->|Fast / Private| Local
-  Router -->|Large Context / Multimodal| Cloud
-  Local -.->|Failover| Cloud
-  Ingest & Quiz & Graph --> Prisma
-  MM --> UI
+  UI --> Ingest
+  UI --> Quiz
+  UI --> Chat
+  UI --> Vision
+  UI --> Graph
+  UI --> Notes
+
+  Ingest --> Router
+  Quiz --> Router
+  Chat --> Router
+  Vision --> Router
+  Graph --> Router
+  Notes --> Router
+
+  Router --> GemmaCloud
+  Router -.-> GemmaLocal
+  Router -.-> Deterministic
+
+  Server --> MemoryStore
+  Server -.-> PrismaDB
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## 🛠️ Technology Stack
 
 | Category | Technology |
 | :--- | :--- |
 | **Framework** | [Next.js 14](https://nextjs.org/) (App Router, Server Components, API Routes) |
-| **Language** | [TypeScript 5](https://www.typescriptlang.org/) (Strict mode, Zod validation) |
-| **Styling** | [Tailwind CSS 3.4](https://tailwindcss.com/) + Neo-Brutalism Custom Tokens |
-| **Database & ORM** | [Prisma ORM 5.19](https://www.prisma.io/) with SQLite (local) / PostgreSQL |
-| **AI Models** | **Google Gemma 4** (`gemma4:e4b` local via Ollama & `gemma-4-26b-a4b-it` cloud) |
-| **Diagrams** | [Mermaid.js](https://mermaid.js.org/) (Client-side SVG rendering) |
+| **Language** | [TypeScript 5](https://www.typescriptlang.org/) (Strict mode, Zod schema validation) |
+| **Styling** | [Tailwind CSS 3.4](https://tailwindcss.com/) + Custom Neo-Brutalist Design Tokens |
+| **AI Models** | **Google Gemma 4** (Fast Neural Engine + Local Offline Ollama Support) |
+| **Diagrams** | [Mermaid.js](https://mermaid.js.org/) (Client-side SVG rendering with PNG export) |
+| **Database & ORM** | [Prisma ORM 5.19](https://www.prisma.io/) + Resilient Zero-Config In-Memory Store |
 | **Motion** | [Framer Motion](https://www.framer.com/motion/) |
 | **Icons** | [Lucide React](https://lucide.dev/) |
 
@@ -167,10 +200,6 @@ flowchart TD
 ### 1. Prerequisites
 - **Node.js**: `v18.18+` or `v20+`
 - **npm** or **pnpm**
-- *(Optional for offline mode)*: [Ollama](https://ollama.ai/) installed with Gemma 4:
-  ```bash
-  ollama run gemma4:e4b
-  ```
 
 ### 2. Clone the Repository
 ```bash
@@ -180,59 +209,50 @@ npm install
 ```
 
 ### 3. Configure Environment Variables
-Create a `.env` file in the root directory:
+Create a `.env` file in the root directory (or copy from `.env.example`):
 ```env
-# Database
+# Optional Database URL (App runs 100% database-free for instant demo deployments)
 DATABASE_URL="file:./dev.db"
+DEMO_MODE="true"
 
-# Local Ollama Provider (Runs Gemma 4 locally)
-OLLAMA_URL="http://localhost:11434"
-LLM_MODEL="gemma4:e4b"
+# Google Gemma 4 Fast Neural Engine Key
+GROQ_API_KEY="your-api-key-here"
 
-# Cloud Gemini Provider (Gemma 4 via Gemini API)
-GEMINI_API_KEY="your_gemini_api_key_here"
+# (Optional) Alternative Cloud Provider
+GEMINI_API_KEY=""
 GEMMA_API_MODEL_NAME="gemma-4-26b-a4b-it"
 ```
 
-### 4. Initialize Database
-Push the Prisma schema to generate the SQLite database:
-```bash
-npx prisma db push
-```
-
-*(Optional)* Seed sample curated lessons:
-```bash
-npm run seed
-```
-
-### 5. Launch Development Server
+### 4. Launch Development Server
 ```bash
 npm run dev
 ```
-
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+Open **[http://localhost:3000](http://localhost:3000)** in your browser.
 
 ---
 
-## 🌐 Public Tunneling (ngrok)
+## 🌐 Deploy to Vercel (Zero Database Required)
 
-To expose your local instance with full AI capabilities:
-```bash
-ngrok http 3000
-```
-Then access your deployment link (e.g. `https://onto-aside-catching.ngrok-free.dev`).
+Saras AI is pre-configured with a zero-database in-memory store so it deploys on Vercel without needing external Postgres or SQLite setups:
+
+1. Import **`https://github.com/badgujarkunal93-blip/sarasai.git`** into [Vercel](https://vercel.com).
+2. Set Environment Variables:
+   - `GROQ_API_KEY`: *(your API key)*
+   - `DEMO_MODE`: `true`
+3. Skip the optional Prisma Postgres integration prompt.
+4. Click **Deploy** — your app will build, generate all 15 static/dynamic routes, and launch immediately!
 
 ---
 
 ## 🧪 Verification & Health Checks
 
-Verify type-safety and build readiness with zero errors:
+Verify type-safety and production build readiness with zero errors:
 
 ```bash
-# Type-checking
+# Type-checking validation
 npm run typecheck
 
-# Production build validation
+# Production build compilation
 npm run build
 ```
 
@@ -241,16 +261,16 @@ npm run build
 ## 📂 Project Directory Structure
 
 ```text
-saras-ai/
+sarasai/
 ├── app/                      # Next.js 14 App Router
 │   ├── api/                  # Backend REST API routes
 │   │   ├── chat/             # Saras AI Socratic tutor co-pilot
 │   │   ├── exams/            # Adaptive study calendar planner
 │   │   ├── flashcards/       # Spaced repetition endpoints
 │   │   ├── knowledge/        # Concept graph & mastery data
-│   │   ├── notes/            # Smart notes & vision upload analysis
+│   │   ├── notes/            # 8-tier smart notes & vision upload analysis
 │   │   ├── progress/         # Checkpoint & chapter progress tracking
-│   │   └── videos/           # YouTube ingestion & caching
+│   │   └── videos/           # YouTube ingestion, caching & demo triggers
 │   ├── discover/             # Video search, input & discovery feed
 │   ├── exam/                 # Exam preparation calendar view
 │   ├── flashcards/           # Interactive flashcard review deck
@@ -265,14 +285,14 @@ saras-ai/
 │   ├── player/               # Custom seek-locked YouTube video player
 │   └── quiz/                 # Checkpoint gating quizzes
 ├── lib/                      # Core business logic & services
-│   ├── db.ts                 # Prisma client instance
+│   ├── db.ts                 # Zero-database in-memory store with Prisma fallback
 │   ├── diagrams.ts           # Mermaid sanitizer & JSON-to-diagram converter
-│   ├── llm.ts                # Gemma 4 dual-provider orchestrator
+│   ├── llm.ts                # Google Gemma 4 neural engine orchestrator
 │   └── services/             # Ingestion, transcript, and AI pipelines
 ├── prisma/                   # Database schema & migrations
 │   ├── schema.prisma         # Multi-model relational schema
-│   └── seed.ts               # Sample educational lessons
-└── public/                   # Static assets & icons
+│   └── seedData.json         # Curated lessons, quizzes & demo videos
+└── public/                   # Static assets, banners & icons
 ```
 
 ---
@@ -283,7 +303,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the Project
 2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+3. Commit your Changes (`git commit -m 'feat: Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
 
