@@ -97,6 +97,17 @@ export default function VideoDetailPage() {
     if (videoId) fetchVideo();
   }, [videoId]);
 
+  // Poll video status while in 'processing' state or waiting for initial segments
+  useEffect(() => {
+    if (!video || (video.status !== 'processing' && video.segments && video.segments.length > 0)) {
+      return;
+    }
+    const interval = setInterval(() => {
+      fetchVideo();
+    }, 2500);
+    return () => clearInterval(interval);
+  }, [video, videoId]);
+
   // Progressive generation poller for currently viewed segment if not ready
   useEffect(() => {
     if (!video || !video.segments || video.segments.length === 0) return;
@@ -222,6 +233,50 @@ export default function VideoDetailPage() {
           <ArrowLeft className="w-3.5 h-3.5 text-[#B8FF3D]" />
           Back to Dashboard
         </NextLink>
+      </div>
+    );
+  }
+
+  if (video.status === 'failed') {
+    return (
+      <div className="bg-[#FFFDF7] border-2 border-[#111218] p-10 rounded-3xl text-center space-y-4 shadow-neo max-w-lg mx-auto my-12">
+        <h2 className="text-lg font-extrabold text-[#111218] font-display uppercase">Processing Failed</h2>
+        <p className="text-xs text-[#636573] font-medium">
+          {video.error_reason || 'Could not process video transcript. Please try another video.'}
+        </p>
+        <NextLink
+          href="/discover"
+          className="neo-btn-primary inline-flex items-center gap-2 px-4 py-2 text-xs font-bold"
+        >
+          <ArrowLeft className="w-3.5 h-3.5 text-[#B8FF3D]" />
+          Back to Dashboard
+        </NextLink>
+      </div>
+    );
+  }
+
+  if (video.status === 'processing' || !video.segments || video.segments.length === 0) {
+    return (
+      <div className="max-w-2xl mx-auto my-16 p-8 rounded-3xl bg-[#FFFDF7] border-2 border-[#111218] shadow-neo space-y-6 text-center">
+        <div className="w-16 h-16 rounded-2xl bg-[#B8FF3D] border-2 border-[#111218] flex items-center justify-center mx-auto text-[#111218] shadow-neo-sm animate-pulse">
+          <Sparkles className="w-8 h-8" />
+        </div>
+        <div className="space-y-2">
+          <span className="badge-lime px-3 py-1 text-[11px] font-bold font-mono">
+            Powered by Gemma 4
+          </span>
+          <h2 className="text-xl font-extrabold text-[#111218] font-display uppercase tracking-wider">
+            Structuring Video Chapters & Checkpoints...
+          </h2>
+          <p className="text-xs text-[#636573] max-w-md mx-auto leading-relaxed">
+            Saras AI is extracting official captions, segmenting sequential chapters, synthesizing process flowcharts & mind maps, and generating your checkpoint quizzes.
+          </p>
+        </div>
+
+        <div className="flex items-center justify-center gap-2.5 pt-2 text-xs font-bold text-[#111218]">
+          <Loader2 className="w-4 h-4 animate-spin text-[#111218]" />
+          <span>Generating lesson workspace, please wait...</span>
+        </div>
       </div>
     );
   }

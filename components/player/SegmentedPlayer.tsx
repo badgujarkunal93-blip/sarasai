@@ -288,6 +288,12 @@ export function SegmentedPlayer({
     } else {
       if (showQuizModal) return;
 
+      if (!activeSegment) {
+        playerRef.current.playVideo();
+        setIsPlaying(true);
+        return;
+      }
+
       const isDone = completedSegmentIds.includes(activeSegment.id);
       if (currentTime >= activeSegment.end_seconds - 0.5 && !isDone) {
         setShowQuizModal(true);
@@ -379,6 +385,7 @@ export function SegmentedPlayer({
   // 6. Checkpoint Quiz Completion Handler
   const handleQuizComplete = async (passed: boolean) => {
     setShowQuizModal(false);
+    if (!activeSegment) return;
 
     const updatedCompleted = Array.from(
       new Set([...completedSegmentIds, activeSegment.id])
@@ -420,6 +427,7 @@ export function SegmentedPlayer({
 
   const handleRetrySegment = () => {
     setShowQuizModal(false);
+    if (!activeSegment) return;
     if (playerRef.current && typeof playerRef.current.seekTo === 'function') {
       playerRef.current.seekTo(activeSegment.start_seconds, true);
       playerRef.current.playVideo();

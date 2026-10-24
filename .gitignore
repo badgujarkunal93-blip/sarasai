@@ -37,3 +37,7 @@ next-env.d.ts
 # SQLite local databases
 *.db
 *.db-journal
+dev.db
+dev.backup.db
+prisma/dev.db
+prisma/dev.backup.db

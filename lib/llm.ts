@@ -202,7 +202,12 @@ async function callCloudGemini(
     }
 
     const data = await res.json();
-    const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+    const candidateParts = data?.candidates?.[0]?.content?.parts || [];
+    const nonThoughtParts = candidateParts.filter((p: any) => !p.thought);
+    const text =
+      nonThoughtParts.map((p: any) => p.text).join('') ||
+      candidateParts[candidateParts.length - 1]?.text ||
+      candidateParts[0]?.text;
     if (!text) {
       throw new Error('Gemini Cloud returned empty response.');
     }
