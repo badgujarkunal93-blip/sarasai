@@ -302,7 +302,7 @@ export function SmartNotesView({ videoId, videoTitle, activeSegmentId, activeSeg
                         {note.title}
                       </h4>
                       <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-[#DDF6BD] border border-[#111218] text-[#111218]">
-                        Powered by Gemma 4 (local)
+                        Powered by Gemma 4
                       </span>
                     </div>
                     <div className="text-xs text-[#21232C] font-medium leading-relaxed whitespace-pre-wrap">

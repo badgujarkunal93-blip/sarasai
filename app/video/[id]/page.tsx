@@ -522,7 +522,7 @@ export default function VideoDetailPage() {
               <div className="flex-shrink-0">
                 <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[10px] font-bold font-mono border-2 border-[#111218] bg-[#DDF6BD] text-[#111218] shadow-neo-sm">
                   <Sparkles className="w-3 h-3 text-[#111218]" />
-                  <span>Powered by Gemma 4 ({providerType})</span>
+                  <span>Powered by Gemma 4</span>
                 </span>
               </div>
             </div>

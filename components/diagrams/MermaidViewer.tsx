@@ -156,7 +156,7 @@ export function MermaidViewer({
           {providerBadge && (
             <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold font-display border border-[#111218] bg-[#DDF6BD] text-[#111218]">
               <Sparkles className="w-3 h-3 text-[#111218]" />
-              <span>Gemma 4 ({providerBadge.provider})</span>
+              <span>Gemma 4</span>
             </span>
           )}
 

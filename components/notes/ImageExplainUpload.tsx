@@ -71,7 +71,7 @@ export function ImageExplainUpload({
         throw new Error(data.error || 'Failed to explain image.');
       }
 
-      setSuccessBadge(data.badge || 'Powered by Gemma 4 (local)');
+      setSuccessBadge(data.badge || 'Powered by Gemma 4');
       setSelectedFile(null);
       setPreviewUrl(null);
       if (fileInputRef.current) fileInputRef.current.value = '';
