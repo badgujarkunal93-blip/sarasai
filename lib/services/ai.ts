@@ -96,6 +96,61 @@ export function validateAndFilterFlashcards(
   return validated;
 }
 
+export const GROQ_CANDIDATE_MODELS = [
+  process.env.GROQ_MODEL || 'qwen/qwen3.8-27b',
+  'openai/gpt-oss-120b',
+  'openai/gpt-oss-20b',
+  'llama-3.3-70b-versatile',
+  'llama-3.1-8b-instant',
+];
+
+export async function callGroqWithFallback(apiKey: string, payload: any): Promise<{ data: any; model: string }> {
+  let lastError: any = null;
+  for (const model of GROQ_CANDIDATE_MODELS) {
+    try {
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ...payload,
+          model,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        return { data, model };
+      }
+
+      const errText = await res.text();
+      if (
+        res.status === 404 ||
+        res.status === 400 ||
+        res.status === 429 ||
+        errText.includes('model_not_found') ||
+        errText.includes('model_decommissioned') ||
+        errText.includes('rate_limit_exceeded')
+      ) {
+        console.warn(`[GROQ] Model "${model}" returned ${res.status}, falling back to next candidate...`);
+        lastError = new Error(`Groq model ${model} error (${res.status}): ${errText}`);
+        continue;
+      }
+
+      throw new Error(`Groq error (${res.status}): ${errText}`);
+    } catch (e: any) {
+      lastError = e;
+      if (e.message?.includes('model_not_found') || e.message?.includes('model_decommissioned')) {
+        continue;
+      }
+      throw e;
+    }
+  }
+  throw lastError || new Error('No Groq models available.');
+}
+
 /**
  * Main AI function to segment a transcript, generate checkpoint quiz questions per segment,
  * and create video-grounded master flashcards for the video.
@@ -293,50 +348,36 @@ CRITICAL INSTRUCTIONS:
         { role: 'user', content: userPrompt },
       ];
 
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${groqKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages,
-          temperature: 0.5,
-          max_tokens: 1000,
-        }),
+      const { data, model: usedModel } = await callGroqWithFallback(groqKey, {
+        messages,
+        temperature: 0.5,
+        max_tokens: 1000,
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const rawReply = data.choices?.[0]?.message?.content || '';
+      const rawReply = data.choices?.[0]?.message?.content || '';
 
-        // Extract JSON flashcards if present
-        let cleanReply = rawReply;
-        let generatedCards: { front: string; back: string }[] | undefined;
-        const jsonMatch = rawReply.match(/```json\s*([\s\S]*?)\s*```/);
-        if (jsonMatch) {
-          try {
-            const parsed = JSON.parse(jsonMatch[1]);
-            if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].front && parsed[0].back) {
-              generatedCards = parsed;
-              cleanReply = rawReply.replace(/```json[\s\S]*?```/, '').trim();
-            }
-          } catch {
-            // keep raw reply if parse fails
+      // Extract JSON flashcards if present
+      let cleanReply = rawReply;
+      let generatedCards: { front: string; back: string }[] | undefined;
+      const jsonMatch = rawReply.match(/```json\s*([\s\S]*?)\s*```/);
+      if (jsonMatch) {
+        try {
+          const parsed = JSON.parse(jsonMatch[1]);
+          if (Array.isArray(parsed) && parsed.length > 0 && parsed[0].front && parsed[0].back) {
+            generatedCards = parsed;
+            cleanReply = rawReply.replace(/```json[\s\S]*?```/, '').trim();
           }
+        } catch {
+          // keep raw reply if parse fails
         }
-
-        return {
-          reply: cleanReply,
-          provider: 'Groq (LLaMA 3.3 70B)',
-          suggestedVideos: findRelevantCuratedVideos(userPrompt),
-          generatedFlashcards: generatedCards,
-        };
-      } else {
-        const errText = await res.text();
-        console.warn(`[GROQ CHAT ERROR ${res.status}]:`, errText);
       }
+
+      return {
+        reply: cleanReply,
+        provider: `Groq (${usedModel})`,
+        suggestedVideos: findRelevantCuratedVideos(userPrompt),
+        generatedFlashcards: generatedCards,
+      };
     } catch (e: any) {
       console.warn('[GROQ CHAT] API call failed, falling back:', e?.message || e);
     }
@@ -493,31 +534,17 @@ Return JSON in this exact structure:
   ]
 }`;
 
-  console.log('[GROQ] sending chat.completions request to https://api.groq.com/openai/v1/chat/completions (llama-3.3-70b-versatile)');
+  console.log('[GROQ] sending chat.completions request with dynamic model fallback');
 
-  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      model: 'llama-3.3-70b-versatile',
-      response_format: { type: 'json_object' },
-      temperature: 0.2,
-      messages: [
-        { role: 'system', content: systemMessage },
-        { role: 'user', content: userPrompt },
-      ],
-    }),
+  const { data } = await callGroqWithFallback(apiKey, {
+    response_format: { type: 'json_object' },
+    temperature: 0.2,
+    messages: [
+      { role: 'system', content: systemMessage },
+      { role: 'user', content: userPrompt },
+    ],
   });
 
-  if (!res.ok) {
-    const errBody = await res.text();
-    throw new Error(`Groq error (${res.status}): ${errBody}`);
-  }
-
-  const data = await res.json();
   const content = data.choices?.[0]?.message?.content || '{}';
   return JSON.parse(content);
 }
@@ -1199,27 +1226,17 @@ Generate the grounded project recommendation JSON now:`;
   if (groqKey) {
     try {
       console.log(`[GROQ] Generating project recommendation for "${videoTitle}"...`);
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${groqKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.25,
-          max_tokens: 2000,
-        }),
+      const { data } = await callGroqWithFallback(groqKey, {
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.25,
+        max_tokens: 2000,
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const content = data.choices?.[0]?.message?.content;
+      const content = data.choices?.[0]?.message?.content;
         if (content) {
           const parsed = JSON.parse(content);
           if (parsed.title && parsed.milestones?.length > 0) {
@@ -1243,7 +1260,6 @@ Generate the grounded project recommendation JSON now:`;
             };
           }
         }
-      }
     } catch (e: any) {
       console.warn('[GROQ] Project generation error:', e.message);
     }
@@ -1615,28 +1631,18 @@ Generate the structured Smart Notes JSON now:`;
 
   if (groqKey) {
     try {
-      console.log(`[GROQ] Generating Smart Notes for "${videoTitle}" (Llama 3.3 70B)...`);
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${groqKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.2,
-          max_tokens: 3000,
-        }),
+      console.log(`[GROQ] Generating Smart Notes for "${videoTitle}"...`);
+      const { data } = await callGroqWithFallback(groqKey, {
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.2,
+        max_tokens: 3000,
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const content = data.choices?.[0]?.message?.content;
+      const content = data.choices?.[0]?.message?.content;
         if (content) {
           const parsed = JSON.parse(content);
           const validatedNotes = validateAndConvertSmartNotes(parsed, videoTitle, segments);
@@ -1645,7 +1651,6 @@ Generate the structured Smart Notes JSON now:`;
             return validatedNotes;
           }
         }
-      }
     } catch (e: any) {
       console.warn('[GROQ] Smart notes generation error:', e.message);
     }
@@ -1779,28 +1784,18 @@ Extract the structured concepts JSON now:`;
 
   if (groqKey) {
     try {
-      console.log(`[GROQ] Extracting Knowledge Graph concepts for "${videoTitle}" (Llama 3.3 70B)...`);
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${groqKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'llama-3.3-70b-versatile',
-          messages: [
-            { role: 'system', content: systemPrompt },
-            { role: 'user', content: userPrompt },
-          ],
-          response_format: { type: 'json_object' },
-          temperature: 0.2,
-          max_tokens: 2500,
-        }),
+      console.log(`[GROQ] Extracting Knowledge Graph concepts for "${videoTitle}"...`);
+      const { data } = await callGroqWithFallback(groqKey, {
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt },
+        ],
+        response_format: { type: 'json_object' },
+        temperature: 0.2,
+        max_tokens: 2500,
       });
 
-      if (res.ok) {
-        const data = await res.json();
-        const content = data.choices?.[0]?.message?.content;
+      const content = data.choices?.[0]?.message?.content;
         if (content) {
           const parsed = JSON.parse(content);
           if (Array.isArray(parsed.concepts) && parsed.concepts.length > 0) {
@@ -1823,7 +1818,6 @@ Extract the structured concepts JSON now:`;
             }));
           }
         }
-      }
     } catch (e: any) {
       console.warn('[GROQ] Concept extraction error:', e.message);
     }
