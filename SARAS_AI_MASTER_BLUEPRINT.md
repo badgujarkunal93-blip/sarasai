@@ -13,7 +13,7 @@
 5. [Core Services & Algorithmic Engines](#5-core-services--algorithmic-engines)
    - 5.1 Ingestion Pipeline & Global Deduplication
    - 5.2 Transcript Extraction & Fallbacks
-   - 5.3 AI Generation & Prompt Engineering (Groq LLaMA 3.3)
+   - 5.3 AI Generation & Prompt Engineering (Google Gemma 4)
    - 5.4 Anti-Hallucination & Flashcard Grounding Filter
    - 5.5 Knowledge Graph Layout Engine
    - 5.6 Spaced-Repetition Revision Ranking Engine
@@ -791,7 +791,7 @@ export function validateAndFilterFlashcards(rawCards: FlashcardProposal[], video
 │   ├── data/
 │   │   └── curatedLessons.ts        # Pre-seeded starter lessons
 │   ├── services/
-│   │   ├── ai.ts                    # Groq API LLaMA 3.3 generation prompts
+│   │   ├── ai.ts                    # Gemma 4 AI generation prompts
 │   │   ├── examPlanner.ts           # Daily study plan calculation engine
 │   │   ├── ingestion.ts             # End-to-end video ingestion & dedupe
 │   │   ├── knowledgeLayout.ts       # Graph force-directed layout coordinates
@@ -821,9 +821,9 @@ export function validateAndFilterFlashcards(rawCards: FlashcardProposal[], video
 2. Run `npx prisma db push` to initialize SQLite database (`dev.db`).
 3. Create `lib/db.ts` to export the Prisma client singleton.
 
-### Phase 3: Ingestion Pipeline & Groq AI Engine
+### Phase 3: Ingestion Pipeline & Gemma 4 AI Engine
 1. Implement `lib/services/transcript.ts` with oEmbed metadata fetching and `youtube-transcript`.
-2. Implement `lib/services/ai.ts` using Groq SDK (`llama-3.3-70b-versatile`) with structured JSON schema outputs.
+2. Implement `lib/services/ai.ts` using Gemma 4 Neural Engine with structured JSON schema outputs.
 3. Implement `lib/services/ingestion.ts` with global cache check by `youtube_video_id` and atomic `$transaction` writes.
 4. Wire `/api/videos` to process incoming links.
 

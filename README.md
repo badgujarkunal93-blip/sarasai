@@ -216,7 +216,7 @@ DATABASE_URL="file:./dev.db"
 DEMO_MODE="true"
 
 # Google Gemma 4 Fast Neural Engine Key
-GROQ_API_KEY="your-api-key-here"
+AI_API_KEY="your-api-key-here"
 
 # (Optional) Alternative Cloud Provider
 GEMINI_API_KEY=""
@@ -237,7 +237,7 @@ Saras AI is pre-configured with a zero-database in-memory store so it deploys on
 
 1. Import **`https://github.com/badgujarkunal93-blip/sarasai.git`** into [Vercel](https://vercel.com).
 2. Set Environment Variables:
-   - `GROQ_API_KEY`: *(your API key)*
+   - `AI_API_KEY`: *(your API key)*
    - `DEMO_MODE`: `true`
 3. Skip the optional Prisma Postgres integration prompt.
 4. Click **Deploy** — your app will build, generate all 15 static/dynamic routes, and launch immediately!

@@ -51,8 +51,8 @@ export function getPrimaryProviderForTask(task: TaskType): ProviderType {
  */
 export function getFastAIConfig() {
   const apiKey =
-    process.env.GROQ_API_KEY ||
     process.env.AI_API_KEY ||
+    process.env.GEMMA_API_KEY ||
     process.env.LLM_API_KEY ||
     '';
   return {
