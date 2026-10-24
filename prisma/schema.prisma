@@ -1,0 +1,417 @@
+// Prisma Schema for Saras AI Platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model Video {
+  id               String              @id @default(cuid())
+  youtube_video_id String              @unique
+  title            String
+  channel          String              @default("YouTube Creator")
+  duration_seconds Int                 @default(0)
+  thumbnail_url    String?
+  status           String              @default("processing") // 'processing' | 'ready' | 'failed'
+  error_reason     String?
+  created_at       DateTime            @default(now())
+
+  segments         Segment[]
+  flashcards       Flashcard[]
+  progress         UserVideoProgress[]
+  tasks            Task[]
+  attention_events AttentionEvent[]
+  projects         ProjectIdea[]
+  notes            SmartNote[]
+
+  @@index([youtube_video_id])
+}
+
+model Segment {
+  id               String           @id @default(cuid())
+  video_id         String
+  video            Video            @relation(fields: [video_id], references: [id], onDelete: Cascade)
+  order_index      Int
+  title            String
+  summary          String?
+  start_seconds    Int
+  end_seconds      Int
+
+  quiz_questions   QuizQuestion[]
+  attention_events AttentionEvent[]
+  notes            SmartNote[]
+  concept_segments ConceptSegment[]
+
+  @@index([video_id])
+}
+
+model QuizQuestion {
+  id               String                @id @default(cuid())
+  segment_id       String
+  segment          Segment               @relation(fields: [segment_id], references: [id], onDelete: Cascade)
+  question         String
+  options          String                // JSON string of array of string options: ["A", "B", "C", "D"]
+  correct_answer   String
+  explanation      String?
+  concept_quizzes  ConceptQuizQuestion[]
+
+  @@index([segment_id])
+}
+
+model Flashcard {
+  id                 String             @id @default(cuid())
+  video_id           String
+  video              Video              @relation(fields: [video_id], references: [id], onDelete: Cascade)
+  front              String
+  back               String
+  mastered           Boolean            @default(false)
+  created_at         DateTime           @default(now())
+  concept_flashcards ConceptFlashcard[]
+
+  @@index([video_id])
+}
+
+model UserVideoProgress {
+  id                    String   @id @default(cuid())
+  user_id               String   @default("default_user")
+  video_id              String
+  video                 Video    @relation(fields: [video_id], references: [id], onDelete: Cascade)
+  current_segment_index Int      @default(0)
+  completed_segment_ids String   @default("[]") // JSON string array of segment ids
+  last_watched_at       DateTime @default(now())
+
+  @@unique([user_id, video_id])
+  @@index([video_id])
+}
+
+model Task {
+  id              String   @id @default(cuid())
+  user_id         String   @default("default_user")
+  label           String
+  done            Boolean  @default(false)
+  linked_video_id String?
+  linked_video    Video?   @relation(fields: [linked_video_id], references: [id], onDelete: SetNull)
+  created_at      DateTime @default(now())
+
+  @@index([user_id])
+}
+
+model AttentionEvent {
+  id         String   @id @default(cuid())
+  user_id    String   @default("default_user")
+  video_id   String?
+  video      Video?   @relation(fields: [video_id], references: [id], onDelete: Cascade)
+  segment_id String?
+  segment    Segment? @relation(fields: [segment_id], references: [id], onDelete: SetNull)
+  event_type String   // 'looked_away' | 'resumed' | 'no_face'
+  created_at DateTime @default(now())
+
+  @@index([video_id])
+  @@index([user_id])
+}
+
+model ChatMessage {
+  id                  String   @id @default(cuid())
+  user_id             String   @default("default_user")
+  role                String   // 'user' | 'assistant'
+  content             String
+  suggested_video_ids String?  // JSON string array of video ids or youtube metadata
+  created_at          DateTime @default(now())
+
+  @@index([user_id])
+}
+
+model ProjectIdea {
+  id                  String        @id @default(cuid())
+  video_id            String
+  video               Video         @relation(fields: [video_id], references: [id], onDelete: Cascade)
+  title               String
+  problem_statement   String
+  difficulty          String        @default("Intermediate") // 'Beginner' | 'Intermediate' | 'Advanced'
+  why_it_fits         String
+  skills_practiced    String        // JSON array of strings
+  requirements        String        // JSON array of strings
+  milestones          String        // JSON array of objects: [{ "id": "m1", "label": "...", "detail": "..." }]
+  expected_outcome    String
+  optional_extensions String        @default("[]") // JSON array of strings
+  created_at          DateTime      @default(now())
+  user_projects       UserProject[]
+
+  @@index([video_id])
+}
+
+model UserProject {
+  id                      String      @id @default(cuid())
+  user_id                 String      @default("default_user")
+  project_idea_id         String
+  project_idea            ProjectIdea @relation(fields: [project_idea_id], references: [id], onDelete: Cascade)
+  status                  String      @default("not_started") // 'not_started' | 'in_progress' | 'completed'
+  completed_milestone_ids String      @default("[]") // JSON array of milestone ids
+  notes                   String?
+  created_at              DateTime    @default(now())
+  updated_at              DateTime    @default(now())
+
+  @@unique([user_id, project_idea_id])
+  @@index([user_id])
+}
+
+model SmartNote {
+  id                   String   @id @default(cuid())
+  video_id             String
+  video                Video    @relation(fields: [video_id], references: [id], onDelete: Cascade)
+  segment_id           String?
+  segment              Segment? @relation(fields: [segment_id], references: [id], onDelete: SetNull)
+  section_type         String   // 'overview' | 'key_concepts' | 'definitions' | 'core_explanations' | 'examples' | 'takeaways' | 'common_mistakes' | 'quick_revision'
+  title                String
+  content              String   // Formatted study content / explanation
+  source_start_seconds Int?
+  source_end_seconds   Int?
+  order_index          Int      @default(0)
+  created_at           DateTime @default(now())
+  updated_at           DateTime @default(now())
+
+  @@index([video_id])
+  @@index([segment_id])
+  @@index([section_type])
+}
+
+// ─────────────────────────────────────────────────────────────
+// KNOWLEDGE GRAPH & CONCEPT MASTERY INTELLIGENCE LAYER
+// ─────────────────────────────────────────────────────────────
+
+model Concept {
+  id                 String                @id @default(cuid())
+  name               String                @unique
+  slug               String                @unique
+  description        String?
+  category           String?               // 'Machine Learning' | 'Computer Science' | 'Hardware' | 'Software Engineering' | 'Programming'
+  created_at         DateTime              @default(now())
+  updated_at         DateTime              @default(now())
+
+  outgoing_relations ConceptRelationship[] @relation("SourceConcept")
+  incoming_relations ConceptRelationship[] @relation("TargetConcept")
+
+  video_segments     ConceptSegment[]
+  flashcards         ConceptFlashcard[]
+  quiz_questions     ConceptQuizQuestion[]
+  user_mastery       UserConceptMastery[]
+  revision_items     RevisionSessionItem[]
+  exam_topics        ExamTopic[]
+  exam_plan_items    ExamPlanItem[]
+
+  @@index([category])
+  @@index([name])
+}
+
+model ConceptRelationship {
+  id                String   @id @default(cuid())
+  source_concept_id String
+  source_concept    Concept  @relation("SourceConcept", fields: [source_concept_id], references: [id], onDelete: Cascade)
+  target_concept_id String
+  target_concept    Concept  @relation("TargetConcept", fields: [target_concept_id], references: [id], onDelete: Cascade)
+  relationship_type String   // 'prerequisite' | 'related' | 'part_of' | 'subtopic'
+  weight            Float    @default(1.0)
+  created_at        DateTime @default(now())
+
+  @@unique([source_concept_id, target_concept_id, relationship_type])
+  @@index([source_concept_id])
+  @@index([target_concept_id])
+}
+
+model ConceptSegment {
+  id                   String   @id @default(cuid())
+  concept_id           String
+  concept              Concept  @relation(fields: [concept_id], references: [id], onDelete: Cascade)
+  segment_id           String
+  segment              Segment  @relation(fields: [segment_id], references: [id], onDelete: Cascade)
+  source_start_seconds Int?
+  source_end_seconds   Int?
+  created_at           DateTime @default(now())
+
+  @@unique([concept_id, segment_id])
+  @@index([concept_id])
+  @@index([segment_id])
+}
+
+model ConceptFlashcard {
+  id           String    @id @default(cuid())
+  concept_id   String
+  concept      Concept   @relation(fields: [concept_id], references: [id], onDelete: Cascade)
+  flashcard_id String
+  flashcard    Flashcard @relation(fields: [flashcard_id], references: [id], onDelete: Cascade)
+
+  @@unique([concept_id, flashcard_id])
+  @@index([concept_id])
+  @@index([flashcard_id])
+}
+
+model ConceptQuizQuestion {
+  id               String       @id @default(cuid())
+  concept_id       String
+  concept          Concept      @relation(fields: [concept_id], references: [id], onDelete: Cascade)
+  quiz_question_id String
+  quiz_question    QuizQuestion @relation(fields: [quiz_question_id], references: [id], onDelete: Cascade)
+
+  @@unique([concept_id, quiz_question_id])
+  @@index([concept_id])
+  @@index([quiz_question_id])
+}
+
+model UserConceptMastery {
+  id             String   @id @default(cuid())
+  user_id        String   @default("default_user")
+  concept_id     String
+  concept        Concept  @relation(fields: [concept_id], references: [id], onDelete: Cascade)
+  mastery_score  Int      @default(0) // 0 - 100
+  correct_count  Int      @default(0)
+  wrong_count    Int      @default(0)
+  exposure_count Int      @default(0)
+  last_seen_at   DateTime @default(now())
+  created_at     DateTime @default(now())
+  updated_at     DateTime @default(now())
+
+  @@unique([user_id, concept_id])
+  @@index([user_id])
+  @@index([concept_id])
+  @@index([mastery_score])
+}
+
+// ─────────────────────────────────────────────────────────────
+// REVISION SESSIONS & ADAPTIVE RECALL ENGINE
+// ─────────────────────────────────────────────────────────────
+
+model RevisionSession {
+  id              String                @id @default(cuid())
+  user_id         String                @default("default_user")
+  mode            String                @default("smart_mix") // 'smart_mix' | 'weak_only' | 'recent'
+  status          String                @default("in_progress") // 'in_progress' | 'completed' | 'abandoned'
+  total_items     Int                   @default(10)
+  completed_items Int                   @default(0)
+  correct_items   Int                   @default(0)
+  session_score   Int                   @default(0) // 0 - 100 accuracy
+  started_at      DateTime              @default(now())
+  completed_at    DateTime?
+  updated_at      DateTime              @default(now())
+  items           RevisionSessionItem[]
+
+  @@index([user_id])
+  @@index([status])
+}
+
+model RevisionSessionItem {
+  id                   String          @id @default(cuid())
+  session_id           String
+  session              RevisionSession @relation(fields: [session_id], references: [id], onDelete: Cascade)
+  concept_id           String?
+  concept              Concept?        @relation(fields: [concept_id], references: [id], onDelete: SetNull)
+  source_type          String          // 'quiz' | 'flashcard' | 'concept_recall'
+  source_id            String?         // quizQuestion.id or flashcard.id
+  question_text        String
+  options              String?         // JSON string array for multiple-choice: ["A", "B", "C", "D"]
+  correct_answer       String?
+  user_answer          String?
+  is_correct           Boolean?
+  explanation          String?
+  order_index          Int             @default(0)
+  source_video_title   String?
+  source_segment_title String?
+  source_start_seconds Int?
+  answered_at          DateTime?
+
+  @@index([session_id])
+  @@index([concept_id])
+}
+
+// ─────────────────────────────────────────────────────────────
+// ADAPTIVE EXAM MODE & STUDY PLANNING ENGINE
+// ─────────────────────────────────────────────────────────────
+
+model Exam {
+  id                String         @id @default(cuid())
+  user_id           String         @default("default_user")
+  name              String
+  exam_date         DateTime
+  daily_minutes     Int            @default(60)
+  goal              String?
+  status            String         @default("active") // 'active' | 'completed' | 'archived'
+  plan_version      Int            @default(1)
+  last_replanned_at DateTime       @default(now())
+  replan_reason     String?
+  created_at        DateTime       @default(now())
+  updated_at        DateTime       @default(now())
+
+  topics            ExamTopic[]
+  plan_days         ExamPlanDay[]
+
+  @@index([user_id])
+  @@index([status])
+  @@index([exam_date])
+}
+
+model ExamTopic {
+  id          String   @id @default(cuid())
+  exam_id     String
+  exam        Exam     @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  concept_id  String?
+  concept     Concept? @relation(fields: [concept_id], references: [id], onDelete: SetNull)
+  topic_name  String
+  priority    Int      @default(1) // 1: normal, 2: high, 3: urgent
+  created_at  DateTime @default(now())
+
+  @@index([exam_id])
+  @@index([concept_id])
+}
+
+model ExamPlanDay {
+  id          String         @id @default(cuid())
+  exam_id     String
+  exam        Exam           @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  day_number  Int
+  date        DateTime
+  status      String         @default("pending") // 'pending' | 'in_progress' | 'completed'
+  created_at  DateTime       @default(now())
+
+  items       ExamPlanItem[]
+
+  @@unique([exam_id, day_number])
+  @@index([exam_id])
+  @@index([date])
+}
+
+model ExamPlanItem {
+  id                   String      @id @default(cuid())
+  plan_day_id          String
+  plan_day             ExamPlanDay @relation(fields: [plan_day_id], references: [id], onDelete: Cascade)
+  concept_id           String?
+  concept              Concept?    @relation(fields: [concept_id], references: [id], onDelete: SetNull)
+  activity_type        String      // 'learn' | 'revision' | 'flashcards' | 'focus' | 'mock_exam'
+  title                String
+  description          String?
+  duration_minutes     Int         @default(30)
+  priority             Int         @default(1)
+  status               String      @default("pending") // 'pending' | 'in_progress' | 'completed' | 'skipped'
+  linked_resource_type String?     // 'video' | 'segment' | 'flashcard_deck' | 'revision'
+  linked_resource_id   String?     // video.id or segment.id
+  order_index          Int         @default(0)
+  completed_at         DateTime?
+
+  @@index([plan_day_id])
+  @@index([concept_id])
+  @@index([status])
+}
+
+model UserProfile {
+  id         String   @id @default(cuid())
+  user_id    String   @unique
+  name       String   @default("Student")
+  email      String   @default("student@saras.ai")
+  avatar_url String?
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+
+  @@index([user_id])
+}

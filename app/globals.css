@@ -1,0 +1,270 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #F5F3EC;
+  --canvas-card: #FFFDF7;
+  --ink: #111218;
+  --ink-soft: #21232C;
+  --ink-muted: #636573;
+  --lime: #B8FF3D;
+  --lime-bright: #C6FF57;
+  --lime-dark: #8ECC24;
+  --sage: #DDF6BD;
+  --sky: #DCEEFF;
+  --lavender: #E9DFFF;
+  --cream: #FFFDF5;
+  --font-inter: 'Inter', sans-serif;
+  --font-space: 'Space Grotesk', sans-serif;
+}
+
+body {
+  background-color: #F5F3EC;
+  color: #111218;
+  font-family: var(--font-inter);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom editorial scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #EAE6DB;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #111218;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #333644;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   NEO-BRUTALIST & EDITORIAL DESIGN SYSTEM UTILITIES
+───────────────────────────────────────────────────────────── */
+
+/* 1. Standard Neo-Brutalist Card */
+.neo-card {
+  background-color: #FFFDF7;
+  border: 2px solid #111218;
+  border-radius: 16px;
+  box-shadow: 4px 4px 0 #111218;
+  transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-card-hover:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 #111218;
+}
+
+/* 2. Offset Shadow Box variations */
+.neo-box-sm {
+  border: 1.5px solid #111218;
+  border-radius: 10px;
+  box-shadow: 3px 3px 0 #111218;
+}
+
+.neo-box-md {
+  border: 2px solid #111218;
+  border-radius: 14px;
+  box-shadow: 4px 4px 0 #111218;
+}
+
+.neo-box-lg {
+  border: 2px solid #111218;
+  border-radius: 20px;
+  box-shadow: 6px 6px 0 #111218;
+}
+
+/* 3. Neo Buttons */
+.neo-btn-primary {
+  background-color: #111218;
+  color: #FFFFFF;
+  border: 2px solid #111218;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #B8FF3D;
+  font-family: var(--font-space);
+  font-weight: 600;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-btn-primary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #B8FF3D;
+  background-color: #21232C;
+}
+
+.neo-btn-primary:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #B8FF3D;
+}
+
+.neo-btn-lime {
+  background-color: #B8FF3D;
+  color: #111218;
+  border: 2px solid #111218;
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 #111218;
+  font-family: var(--font-space);
+  font-weight: 700;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-btn-lime:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 #111218;
+  background-color: #C6FF57;
+}
+
+.neo-btn-lime:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 #111218;
+}
+
+.neo-btn-outline {
+  background-color: #FFFDF7;
+  color: #111218;
+  border: 1.5px solid #111218;
+  border-radius: 10px;
+  box-shadow: 2px 2px 0 #111218;
+  font-weight: 600;
+  transition: all 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.neo-btn-outline:hover {
+  background-color: #F5F3EC;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 #111218;
+}
+
+/* 4. Highlight Badges (Positivus style) */
+.badge-lime {
+  background-color: #B8FF3D;
+  color: #111218;
+  border: 1.5px solid #111218;
+  border-radius: 6px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-black {
+  background-color: #111218;
+  color: #FFFFFF;
+  border: 1.5px solid #111218;
+  border-radius: 6px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-lavender {
+  background-color: #E9DFFF;
+  color: #111218;
+  border: 1.5px solid #111218;
+  border-radius: 6px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-sky {
+  background-color: #DCEEFF;
+  color: #111218;
+  border: 1.5px solid #111218;
+  border-radius: 6px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+.badge-sage {
+  background-color: #DDF6BD;
+  color: #111218;
+  border: 1.5px solid #111218;
+  border-radius: 6px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* 5. Circular Action Arrow Button (Positivus iconic element) */
+.circle-arrow-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background-color: #111218;
+  color: #B8FF3D;
+  border: 1.5px solid #111218;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 180ms ease;
+}
+
+.group:hover .circle-arrow-btn {
+  transform: rotate(-45deg) scale(1.05);
+  background-color: #B8FF3D;
+  color: #111218;
+}
+
+.circle-arrow-btn-light {
+  width: 36px;
+  height: 36px;
+  border-radius: 9999px;
+  background-color: #B8FF3D;
+  color: #111218;
+  border: 1.5px solid #111218;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 180ms ease;
+}
+
+.group:hover .circle-arrow-btn-light {
+  transform: rotate(-45deg) scale(1.05);
+  background-color: #FFFFFF;
+}
+
+/* 6. Inputs */
+.neo-input {
+  background-color: #FFFDF7;
+  border: 2px solid #111218;
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 #111218;
+  color: #111218;
+  transition: all 160ms ease;
+}
+
+.neo-input:focus-within {
+  border-color: #111218;
+  box-shadow: 4px 4px 0 #B8FF3D;
+  outline: none;
+}
+
+/* 7. 3D Flip Card animations for Flashcards */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.transform-style-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
