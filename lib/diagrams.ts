@@ -44,8 +44,17 @@ export const FlowchartZodSchema = z.object({
 
 export const MindMapZodSchema: z.ZodType<MindMapJSON> = z.lazy(() =>
   z.object({
-    topic: z.string(),
-    children: z.array(MindMapZodSchema).optional(),
+    topic: z
+      .any()
+      .optional()
+      .transform((val) => {
+        if (typeof val === 'string' && val.trim()) return val.trim();
+        if (val && typeof val === 'object') {
+          return val.topic || val.title || val.name || val.label || 'Key Concept';
+        }
+        return 'Key Concept';
+      }),
+    children: z.array(MindMapZodSchema).optional().default([]),
   })
 );
 

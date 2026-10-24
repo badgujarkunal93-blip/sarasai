@@ -17,6 +17,7 @@ import { ProviderType } from '../llm';
 export interface IngestOptions {
   source?: 'manual' | 'chat';
   userId?: string;
+  forceReingest?: boolean;
 }
 
 /**
@@ -51,8 +52,13 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
     },
   });
 
-  // Cache hit: already processed and stored in database
-  if (existingVideo && existingVideo.status === 'ready') {
+  // Cache hit: already processed with valid chapters and stored in database
+  if (
+    existingVideo &&
+    existingVideo.status === 'ready' &&
+    !options.forceReingest &&
+    (existingVideo.duration_seconds < 180 || existingVideo.segments.length >= 3)
+  ) {
     console.log(`[CACHE] hit (loaded ${existingVideo.segments.length} segments, ${existingVideo.flashcards.length} flashcards from database for video_id=${videoId})`);
     await ensureUserProgress(existingVideo.id, userId);
     return {
@@ -62,7 +68,7 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
   }
 
   // Concurrent lock: currently being processed
-  if (existingVideo && existingVideo.status === 'processing') {
+  if (existingVideo && existingVideo.status === 'processing' && !options.forceReingest) {
     console.log(`[CACHE] pending (video_id=${videoId} is currently processing)`);
     return {
       video: existingVideo,

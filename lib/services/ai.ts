@@ -1,6 +1,7 @@
 import { TranscriptItem } from './transcript';
 import { CURATED_LESSONS } from '../data/curatedLessons';
 import { genJSON, MANDATORY_PLAIN_TEXT_RULE, ProviderType } from '../llm';
+import { formatTime } from '../utils';
 import {
   FlowchartJSON,
   MindMapJSON,
@@ -119,7 +120,7 @@ const SegmentationZodSchema = z.object({
         })
       ).default([]),
     })
-  ),
+  ).min(2),
   flashcards: z.array(
     z.object({
       front: z.string(),
@@ -157,6 +158,8 @@ const segmentationSchema = {
         },
         required: ['order_index', 'title', 'summary', 'start_seconds', 'end_seconds'],
       },
+      minItems: 3,
+      maxItems: 5,
     },
     flashcards: {
       type: 'array',
@@ -174,6 +177,78 @@ const segmentationSchema = {
 };
 
 /**
+ * Normalizes segments to ensure:
+ * 1. At least 3 chapters for videos >= 180s
+ * 2. Contiguous non-overlapping timestamps from 0 to totalDuration
+ * 3. Proportional scaling if AI segments only covered a fraction of the video
+ */
+function normalizeSegments(
+  rawSegments: SegmentProposal[],
+  totalDuration: number
+): SegmentProposal[] {
+  if (!rawSegments || rawSegments.length === 0) return [];
+
+  // Sort by start_seconds
+  let sorted = [...rawSegments].sort((a, b) => a.start_seconds - b.start_seconds);
+
+  // If only 1 or 2 segments returned for a video >= 180s, split the longest segment
+  while (sorted.length < 3 && totalDuration >= 180) {
+    let longestIdx = 0;
+    let longestDur = 0;
+    for (let i = 0; i < sorted.length; i++) {
+      const dur = (sorted[i].end_seconds || totalDuration) - sorted[i].start_seconds;
+      if (dur > longestDur) {
+        longestDur = dur;
+        longestIdx = i;
+      }
+    }
+    const target = sorted[longestIdx];
+    const midSec = Math.floor((target.start_seconds + target.end_seconds) / 2);
+    const newPartA: SegmentProposal = {
+      ...target,
+      end_seconds: midSec,
+      title: `${target.title} (Part 1)`,
+    };
+    const newPartB: SegmentProposal = {
+      ...target,
+      start_seconds: midSec,
+      title: `${target.title} (Part 2)`,
+      quiz_questions: [],
+    };
+    sorted.splice(longestIdx, 1, newPartA, newPartB);
+  }
+
+  // Check coverage: if max end_seconds is less than 70% of totalDuration, scale proportionally
+  const maxEnd = sorted[sorted.length - 1]?.end_seconds || 0;
+  if (totalDuration > 60 && maxEnd > 0 && maxEnd < totalDuration * 0.7) {
+    const scale = totalDuration / maxEnd;
+    for (const seg of sorted) {
+      seg.start_seconds = Math.floor(seg.start_seconds * scale);
+      seg.end_seconds = Math.floor(seg.end_seconds * scale);
+    }
+  }
+
+  // Make contiguous: 0 to totalDuration
+  sorted[0].start_seconds = 0;
+  for (let i = 0; i < sorted.length; i++) {
+    sorted[i].order_index = i;
+    if (i > 0) {
+      sorted[i].start_seconds = sorted[i - 1].end_seconds;
+    }
+    if (sorted[i].end_seconds <= sorted[i].start_seconds) {
+      const remainingTime = totalDuration - sorted[i].start_seconds;
+      const remainingSegments = sorted.length - i;
+      sorted[i].end_seconds = sorted[i].start_seconds + Math.max(30, Math.floor(remainingTime / remainingSegments));
+    }
+  }
+
+  // Guarantee final chapter reaches totalDuration
+  sorted[sorted.length - 1].end_seconds = totalDuration;
+
+  return sorted;
+}
+
+/**
  * Main AI function to segment a transcript into chapters.
  * Uses Gemma 4 via single unified client (task: split_transcript, Cloud Gemini primary, Local Ollama fallback).
  */
@@ -182,23 +257,38 @@ export async function generateSegmentsAndQuizzes(
   transcriptItems: TranscriptItem[],
   totalDuration: number
 ): Promise<SegmentationAndQuizResult> {
-  const formattedTranscript = transcriptItems
-    .slice(0, 220)
-    .map((t) => `[${Math.floor(t.offset)}s - ${Math.floor(t.offset + t.duration)}s]: ${t.text}`)
+  // Evenly sample transcript items across the full duration of the video
+  let sampledItems = transcriptItems;
+  const targetItemCount = 200;
+  if (transcriptItems.length > targetItemCount) {
+    const step = transcriptItems.length / targetItemCount;
+    sampledItems = [];
+    for (let i = 0; i < targetItemCount; i++) {
+      const idx = Math.floor(i * step);
+      if (transcriptItems[idx]) {
+        sampledItems.push(transcriptItems[idx]);
+      }
+    }
+  }
+
+  const formattedTranscript = sampledItems
+    .map((t) => `[${Math.floor(t.offset)}s (${formatTime(t.offset)})]: ${t.text}`)
     .join('\n');
 
-  const prompt = `Divide this educational video into 3 to 5 logical sequential chapters with non-overlapping timestamps from 0 to ${totalDuration} seconds.
+  const prompt = `Divide this educational video into 3 to 5 logical sequential chapters with non-overlapping timestamps spanning from 0 to ${totalDuration} seconds.
+The FIRST chapter must start at 0s, and the LAST chapter must end at ${totalDuration}s.
 For segment 1 (order_index 0), provide 2 checkpoint quiz questions with explanations testing only that segment's interval.
 Also provide 4 to 8 high-yield flashcards covering key definitions and mechanisms taught in this video.
 
 VIDEO TITLE: "${videoTitle}"
-TOTAL DURATION: ${totalDuration} seconds.
-TRANSCRIPT EXCERPT:
+TOTAL DURATION: ${totalDuration} seconds (${formatTime(totalDuration)}).
+TRANSCRIPT EXCERPT SPANNING 0s TO ${totalDuration}s:
 ${formattedTranscript}
 
 CRITICAL RULES:
-1. Every segment, quiz question, and flashcard MUST test concepts directly spoken in the transcript.
-2. ${MANDATORY_PLAIN_TEXT_RULE}`;
+1. You MUST generate between 3 and 5 chapters spanning the ENTIRE video duration (0s to ${totalDuration}s).
+2. Every segment, quiz question, and flashcard MUST test concepts directly spoken in the transcript.
+3. ${MANDATORY_PLAIN_TEXT_RULE}`;
 
   try {
     console.log(`[LLM] Splitting transcript for "${videoTitle}" with Gemma 4...`);
@@ -208,19 +298,20 @@ CRITICAL RULES:
       segmentationSchema,
       SegmentationZodSchema,
       {
-        systemPrompt: `You are an expert instructional designer extracting structured study materials from video transcripts. ${MANDATORY_PLAIN_TEXT_RULE}`,
+        systemPrompt: `You are an expert instructional designer extracting structured study materials from video transcripts. Generate between 3 and 5 sequential chapters that cover the entire video timeline from 0 to ${totalDuration} seconds. ${MANDATORY_PLAIN_TEXT_RULE}`,
       }
     );
 
     if (res && res.segments && res.segments.length > 0) {
+      const normalizedSegments = normalizeSegments(res.segments, totalDuration);
       const validatedCards = validateAndFilterFlashcards(res.flashcards || [], videoTitle);
-      console.log(`[LLM: ${provider}/${model}] Successfully split into ${res.segments.length} segments.`);
+      console.log(`[LLM: ${provider}/${model}] Successfully split into ${normalizedSegments.length} segments.`);
       return {
-        segments: res.segments,
+        segments: normalizedSegments,
         flashcards:
           validatedCards.length > 0
             ? validatedCards
-            : generateTranscriptGroundedFlashcards(videoTitle, transcriptItems, res.segments),
+            : generateTranscriptGroundedFlashcards(videoTitle, transcriptItems, normalizedSegments),
       };
     }
   } catch (err: any) {
@@ -1476,22 +1567,28 @@ const conceptExtractionSchema = {
   required: ['concepts'],
 };
 
-const ConceptExtractionZod = z.object({
-  concepts: z.array(
-    z.object({
-      name: z.string(),
-      description: z.string(),
-      category: z.string().default('Computer Science'),
-      related_concepts: z.array(
-        z.object({
-          target_name: z.string(),
-          relationship_type: z.enum(['prerequisite', 'part_of', 'subtopic', 'related']),
-        })
-      ).optional().default([]),
-      segment_order_indices: z.array(z.number()).optional().default([0]),
-    })
-  ),
-});
+const ConceptExtractionZod = z.preprocess(
+  (val) => {
+    if (Array.isArray(val)) return { concepts: val };
+    return val;
+  },
+  z.object({
+    concepts: z.array(
+      z.object({
+        name: z.string(),
+        description: z.string(),
+        category: z.string().default('Computer Science'),
+        related_concepts: z.array(
+          z.object({
+            target_name: z.string(),
+            relationship_type: z.enum(['prerequisite', 'part_of', 'subtopic', 'related']),
+          })
+        ).optional().default([]),
+        segment_order_indices: z.array(z.number()).optional().default([0]),
+      })
+    ),
+  })
+);
 
 /**
  * Extracts atomic concepts and semantic relationships for a video lecture.
