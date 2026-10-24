@@ -41,3 +41,14 @@ dev.db
 dev.backup.db
 prisma/dev.db
 prisma/dev.backup.db
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Scratch & test scripts
+test_*.ts
+scratch/
+
