@@ -1109,7 +1109,7 @@ export default function DiscoverHomePage() {
             </div>
           </div>
           <span className="badge-lime px-2.5 py-0.5 text-[10px] font-black uppercase">
-            ● Groq AI Online
+            ● Gemma 4 Online
           </span>
         </div>
 

@@ -382,7 +382,7 @@ export default function SarasLandingPage() {
                 </p>
                 <div className="flex items-center gap-2 pt-2">
                   <span className="badge-black px-2.5 py-0.5 text-[10px] font-bold uppercase font-mono">
-                    Groq LLaMA 3.3 70B
+                    Gemma 4 (Local + Cloud)
                   </span>
                   <span className="badge-lime px-2.5 py-0.5 text-[10px] font-bold uppercase font-mono">
                     Deterministic Cache
@@ -886,7 +886,7 @@ export default function SarasLandingPage() {
               The Core Tech Stack
             </h2>
             <p className="text-sm text-[#636573] font-medium">
-              Built on production-grade web technologies, local in-browser vision models, and Groq Cloud intelligence.
+              Built on production-grade web technologies, local in-browser vision models, and dual-provider Gemma 4 intelligence.
             </p>
           </div>
 
@@ -895,7 +895,7 @@ export default function SarasLandingPage() {
               { title: 'Next.js 14', category: 'App Router', desc: 'Hybrid SSR & React Server Actions' },
               { title: 'Tailwind CSS', category: 'Design System', desc: 'Neo-brutalist custom tokens' },
               { title: 'Prisma + SQLite', category: 'Data Layer', desc: 'Normalized relational storage' },
-              { title: 'Groq Cloud', category: 'AI Inference', desc: 'LLaMA 3.3 70B fast reasoning' },
+              { title: 'Gemma 4 Client', category: 'AI Inference', desc: 'Local Ollama & Cloud Gemini' },
               { title: 'YouTube IFrame', category: 'Video Engine', desc: 'Precision timestamp gating' },
               { title: 'MediaPipe WASM', category: 'Computer Vision', desc: '100% on-device attention' },
             ].map((tech, idx) => (

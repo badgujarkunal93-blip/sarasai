@@ -33,6 +33,10 @@ export interface SegmentItem {
   start_seconds: number;
   end_seconds: number;
   quiz_questions: QuizQuestionItem[];
+  mindmap_json?: string | null;
+  flowchart_json?: string | null;
+  generation_status?: string;
+  llm_provider?: string | null;
 }
 
 interface SegmentedPlayerProps {

@@ -1,28 +1,34 @@
 # Saras AI ✦
 
 > **Learn. Recall. Understand.**  
-> Transform any educational video or topic into an active, mastery-enforced learning environment with topic segmentation, checkpoint quiz gating, grounded flashcards, interactive concept knowledge graphs, and privacy-first deep focus monitoring.
+> Transform any educational video or topic into an active, mastery-enforced learning environment with topic segmentation, checkpoint quiz gating, grounded flashcards, interactive concept knowledge graphs, visual flowcharts & mind maps, slide vision analysis, and privacy-first deep focus monitoring.
 
 [![Next.js 14](https://img.shields.io/badge/Next.js-14.2-black?logo=next.js)](https://nextjs.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?logo=tailwind-css)](https://tailwindcss.com/)
 [![Prisma ORM](https://img.shields.io/badge/Prisma-5.19-2D3748?logo=prisma)](https://www.prisma.io/)
-[![Groq Cloud](https://img.shields.io/badge/Groq-LPU_Inference-F05A28)](https://console.groq.com/)
+[![Gemma 4](https://img.shields.io/badge/Gemma_4-Local_%2B_Cloud-B8FF3D)](https://ai.google.dev/gemma)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
 
 ---
 
 ## ⚡ Overview
 
-**Saras AI** is an AI-powered active learning platform designed to replace passive video consumption with an enforced retrieval loop:
+**Saras AI** is an AI-powered active learning platform designed to replace passive video consumption with an enforced retrieval loop powered exclusively by **Gemma 4**:
 
 - 🎬 **Smart Video Ingestion & Deduplication**: Paste any YouTube URL to extract chapters, transcripts, and core concepts. If a video has already been processed by any user, it loads instantly from cache without redundant LLM calls.
+- ⚡ **Gemma 4 Unified AI Engine**: All AI calls run through a single client (`lib/llm.ts`) utilizing two providers with automatic retry (2x) and seamless failover:
+  - **Local Provider**: Ollama at `OLLAMA_URL` (default `http://localhost:11434`), model `LLM_MODEL` (default `gemma4:e4b`), `POST /api/chat`, `stream:false`, `"think": false`, temperature 0.3, 5-minute timeout.
+  - **Cloud Provider**: Gemini API using `GEMINI_API_KEY`, model `GEMMA_API_MODEL_NAME` (`gemma-4-26b-a4b-it`) with structured JSON output.
+- 🧭 **Task Routing**:
+  - **Local**: Segment notes, 5 active recall flashcards, checkpoint quizzes (4 questions with explanations), mind map JSON, flowchart JSON, slide image upload explanation.
+  - **Cloud**: Splitting transcript into chapters, concept extraction for knowledge graph, Saras tutor co-pilot chat, exam planner explanations.
+- 📊 **Visual Flowcharts & Mind Maps**: Gemma 4 outputs strict JSON definitions converted to Mermaid.js on the client with Download SVG/PNG buttons and graceful fallback rendering.
+- 🖼️ **Slide & Note Vision Analysis**: Upload lecture slides or handwritten notes on the lesson page; Gemma 4 performs visual deconstruction and saves the result directly into that chapter's smart notes.
+- ⏳ **Progressive Segment Generation**: Segment 1 is generated immediately so students can start learning without waiting; subsequent segments are generated sequentially in the background with skeleton loaders.
 - 🔒 **Checkpoint Quiz Gating**: Enforces true understanding before allowing students to advance through subsequent video chapters using a custom seek-locked YouTube player.
-- 🃏 **Grounded Flashcards & Active Recall**: Automatically extracts flashcards directly tied to video transcript definitions with spaced repetition actions.
 - 🗺️ **2D Concept Knowledge Graph**: Relational map connecting prerequisites, categories, and concept dependencies across topics with real-time mastery scores (0–100%).
-- 📅 **Adaptive Exam Mode**: Deterministic daily study calendar planning engine taking your exam date and study minutes to schedule high-yield revision and foundational learning.
+- 📅 **Adaptive Exam Mode**: Strategic daily study calendar planning engine taking your exam date and study minutes to pace high-yield revision and foundational learning.
 - 🎯 **Deep Focus Workspace**: On-device privacy-first attention monitoring powered by client-side computer vision to pause playback on cognitive drift.
-- 🤖 **Saras AI Companion**: Context-aware AI tutor drawer referencing active video chapters, transcripts, and weak concepts.
-- 📈 **Personal Learning History & Streaks**: Automatically tracks progress, completed lessons, and study streaks with zero cross-user data leakage.
 
 ---
 
@@ -34,7 +40,7 @@ Saras AI is built with an **Editorial Neo-Brutalist** aesthetic:
 - **Ink**: `#111218` (Hard borders & headings)
 - **Accent**: `#B8FF3D` (Electric neon lime)
 - **Secondary**: Sage (`#DDF6BD`), Sky (`#DCEEFF`), Lavender (`#E9DFFF`)
-- **Interactive Grid Canvas**: A subtle paper-dot grid background that reacts to pointer proximity and ripples on background clicks.
+- **Badge**: Every AI-generated component features a "Powered by Gemma 4 (local / cloud)" provenance badge.
 
 ---
 
@@ -43,7 +49,10 @@ Saras AI is built with an **Editorial Neo-Brutalist** aesthetic:
 - **Framework**: [Next.js 14 (App Router)](https://nextjs.org/)
 - **UI & Styling**: Tailwind CSS + Neo-Brutalist Custom Utilities
 - **Database & ORM**: SQLite (development) / PostgreSQL (production) with [Prisma ORM](https://www.prisma.io/)
-- **AI Inference Engine**: [Groq Cloud API](https://console.groq.com/) (`qwen/qwen3.8-27b`, `openai/gpt-oss-120b`, `llama-3.3-70b-versatile`) with dynamic fallback
+- **AI Inference Client**: Single unified `lib/llm.ts` driving Gemma 4 across:
+  - Local Ollama (`gemma4:e4b`)
+  - Cloud Gemini API (`gemma-4-26b-a4b-it`)
+- **Diagrams**: Mermaid.js dynamic client rendering with SVG & high-res PNG export
 - **Video & Player**: YouTube IFrame API with custom seek-lock boundary enforcement
 - **Vision / Attention**: Client-side MediaPipe WebAssembly Face Attention Tracking
 - **Icons**: Lucide React
@@ -61,15 +70,22 @@ npm install
 ```
 
 ### 2. Configure Environment Variables
-Copy the `.env.example` template:
+Copy `.env.example` to `.env`:
 ```bash
 cp .env.example .env
 ```
 
-Add your free Groq API key in `.env`:
+Set up your Gemma 4 providers in `.env`:
 ```env
 DATABASE_URL="file:./dev.db"
-GROQ_API_KEY="your_groq_api_key_here"
+
+# Local Ollama Provider (Runs Gemma 4 locally)
+OLLAMA_URL="http://localhost:11434"
+LLM_MODEL="gemma4:e4b"
+
+# Cloud Gemini Provider (Calls Gemma 4 via Gemini API)
+GEMINI_API_KEY="your_gemini_api_key_here"
+GEMMA_API_MODEL_NAME="gemma-4-26b-a4b-it"
 ```
 
 ### 3. Initialize Database & Seed Lessons
@@ -95,27 +111,6 @@ Run all built-in test suites to verify system behavior:
 # Typecheck
 npm run typecheck
 
-# Knowledge Graph Non-Overlap Physics Test
-npx tsx scripts/test_knowledge_layout.ts
-
-# Adaptive Exam Mode Prerequisite Test
-npx tsx scripts/test_exam_mode.ts
-
-# Chatbot Grounding & Hardening Audit
-npx tsx scripts/test_chatbot_hardening.ts
-
-# Comprehensive 30-Point Truthfulness Audit
-npx tsx scripts/test_master_truthfulness_audit.ts
+# Production build verification
+npm run build
 ```
-
----
-
-## 📜 Documentation
-
-- Master Architectural Spec: [`SARAS_AI_MASTER_BLUEPRINT.md`](./SARAS_AI_MASTER_BLUEPRINT.md)
-- Modular Build Roadmap: [`phases/ROADMAP.md`](./phases/ROADMAP.md)
-
----
-
-## ⚖️ License
-MIT License. Built for active learning & mastery.

@@ -41,6 +41,11 @@ model Segment {
   start_seconds    Int
   end_seconds      Int
 
+  mindmap_json     String?
+  flowchart_json   String?
+  generation_status String          @default("ready")
+  llm_provider     String?
+
   quiz_questions   QuizQuestion[]
   attention_events AttentionEvent[]
   notes            SmartNote[]

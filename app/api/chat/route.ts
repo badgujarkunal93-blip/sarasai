@@ -68,6 +68,10 @@ export async function POST(req: NextRequest) {
     if (action === 'ingest_suggested' && videoUrl) {
       const ingestRes = await ingestVideo(videoUrl, { source: 'chat', userId });
 
+      if (!ingestRes.video) {
+        return NextResponse.json({ error: 'Video processing failed' }, { status: 500 });
+      }
+
       const confirmationMsg = await db.chatMessage.create({
         data: {
           user_id: userId,
@@ -122,6 +126,10 @@ export async function POST(req: NextRequest) {
 
       // Ingest via shared deterministic pipeline
       const ingestRes = await ingestVideo(trimmedMessage, { source: 'chat', userId });
+
+      if (!ingestRes.video) {
+        return NextResponse.json({ error: 'Video processing failed' }, { status: 500 });
+      }
 
       const assistantMsg = await db.chatMessage.create({
         data: {
@@ -257,7 +265,7 @@ export async function POST(req: NextRequest) {
     });
 
     // ─────────────────────────────────────────────────────────────
-    // AI GENERATION: Call Groq LLaMA 3.3 70B with Claude Fallback
+    // AI GENERATION: Call Gemma 4 (task: tutor_chat)
     // ─────────────────────────────────────────────────────────────
     const aiResponse = await chatAssistantReply(
       trimmedMessage,

@@ -42,7 +42,7 @@ export function ChatAssistant({ isOpen, onClose }: ChatAssistantProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [ingestingUrl, setIngestingUrl] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
-  const [runtimeProvider, setRuntimeProvider] = useState<string>('Groq (LLaMA 3.3 70B)');
+  const [runtimeProvider, setRuntimeProvider] = useState<string>('Powered by Gemma 4 (cloud)');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
@@ -230,7 +230,7 @@ export function ChatAssistant({ isOpen, onClose }: ChatAssistantProps) {
             <h3 className="text-xs font-extrabold text-white font-display uppercase tracking-tight flex items-center gap-1.5">
               Saras AI
               <span className="badge-lime px-1.5 py-0.2 text-[9px] font-mono font-bold">
-                {runtimeProvider.includes('Groq') ? 'Groq LLaMA 3.3' : runtimeProvider.includes('Claude') ? 'Claude 3.5' : 'AI Online'}
+                {runtimeProvider.includes('Gemma 4') ? (runtimeProvider.includes('local') ? 'Gemma 4 (Local)' : 'Gemma 4 (Cloud)') : 'Gemma 4'}
               </span>
             </h3>
             <p className="text-[10px] text-slate-300 font-medium">

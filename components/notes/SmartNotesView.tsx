@@ -21,6 +21,7 @@ import {
   SlidersHorizontal,
 } from 'lucide-react';
 import { formatTime } from '@/lib/utils';
+import { ImageExplainUpload } from './ImageExplainUpload';
 
 export interface SmartNoteData {
   id: string;
@@ -34,7 +35,8 @@ export interface SmartNoteData {
     | 'examples'
     | 'takeaways'
     | 'common_mistakes'
-    | 'quick_revision';
+    | 'quick_revision'
+    | 'image_explanation';
   title: string;
   content: string;
   source_start_seconds?: number | null;
@@ -52,9 +54,11 @@ export interface SmartNoteData {
 interface SmartNotesViewProps {
   videoId: string;
   videoTitle: string;
+  activeSegmentId?: string;
+  activeSegmentTitle?: string;
 }
 
-export function SmartNotesView({ videoId, videoTitle }: SmartNotesViewProps) {
+export function SmartNotesView({ videoId, videoTitle, activeSegmentId, activeSegmentTitle }: SmartNotesViewProps) {
   const [notes, setNotes] = useState<SmartNoteData[]>([]);
   const [loading, setLoading] = useState(true);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -135,6 +139,10 @@ export function SmartNotesView({ videoId, videoTitle }: SmartNotesViewProps) {
     () => notes.filter((n) => n.section_type === 'quick_revision'),
     [notes]
   );
+  const imageExplanationNotes = useMemo(
+    () => notes.filter((n) => n.section_type === 'image_explanation'),
+    [notes]
+  );
 
   // Filter notes by search query
   const filteredNotes = useMemo(() => {
@@ -193,6 +201,14 @@ export function SmartNotesView({ videoId, videoTitle }: SmartNotesViewProps) {
 
   return (
     <div className="space-y-6">
+      {/* Slide & Diagram Image Upload Widget */}
+      <ImageExplainUpload
+        videoId={videoId}
+        segmentId={activeSegmentId}
+        segmentTitle={activeSegmentTitle}
+        onNoteCreated={() => fetchNotes(false)}
+      />
+
       {/* 1. Top Controls Bar: Search + Filter Pills + Regenerate Action */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b-2 border-[#111218]">
         {/* Search Input */}
@@ -225,6 +241,7 @@ export function SmartNotesView({ videoId, videoTitle }: SmartNotesViewProps) {
       <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1">
         {[
           { key: 'all', label: 'All Sections', count: notes.length },
+          { key: 'image_explanation', label: 'Slide Explanations', count: imageExplanationNotes.length },
           { key: 'overview', label: 'Overview', count: overviewNotes.length },
           { key: 'key_concepts', label: 'Key Concepts', count: keyConceptNotes.length },
           { key: 'definitions', label: 'Definitions', count: definitionNotes.length },
@@ -261,6 +278,42 @@ export function SmartNotesView({ videoId, videoTitle }: SmartNotesViewProps) {
 
       {/* 4. Notes Content Display */}
       <div className="space-y-6">
+        {/* SECTION 0: Slide & Diagram Image Explanations */}
+        {(selectedSection === 'all' || selectedSection === 'image_explanation') &&
+          imageExplanationNotes.length > 0 && (
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <span className="badge-lime px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider">
+                  Vision Analysis
+                </span>
+                <h3 className="text-sm font-extrabold text-[#111218] font-display uppercase">
+                  Slide & Diagram Explanations ({imageExplanationNotes.length})
+                </h3>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3.5">
+                {imageExplanationNotes.map((note) => (
+                  <div
+                    key={note.id}
+                    className="p-5 rounded-2xl bg-[#FFFDF7] border-2 border-[#111218] shadow-neo space-y-3"
+                  >
+                    <div className="flex items-center justify-between gap-2 pb-2 border-b border-[#111218]/15">
+                      <h4 className="text-sm font-black font-display text-[#111218]">
+                        {note.title}
+                      </h4>
+                      <span className="px-2 py-0.5 rounded text-[10px] font-bold font-mono bg-[#DDF6BD] border border-[#111218] text-[#111218]">
+                        Powered by Gemma 4 (local)
+                      </span>
+                    </div>
+                    <div className="text-xs text-[#21232C] font-medium leading-relaxed whitespace-pre-wrap">
+                      {note.content}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
+
         {/* SECTION A: Overview */}
         {(selectedSection === 'all' || selectedSection === 'overview') &&
           overviewNotes.length > 0 && (

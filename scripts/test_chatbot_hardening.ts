@@ -32,8 +32,8 @@ async function runChatbotAudit() {
   console.log(`[AI PROVIDER]: ${res1.provider}`);
   console.log(`[AI RESPONSE SNIPPET]: ${res1.reply.slice(0, 150)}...`);
 
-  if (!res1.provider.includes('Groq') && !res1.provider.includes('Claude')) {
-    console.error('❌ Test 1 Failed: Provider not recognized as Groq or Claude.');
+  if (!res1.provider.includes('Gemma 4')) {
+    console.error('❌ Test 1 Failed: Provider not recognized as Gemma 4.');
     process.exit(1);
   }
   if (!res1.reply || res1.reply.length < 50) {

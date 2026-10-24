@@ -7,7 +7,12 @@ import {
   validateAndFilterFlashcards,
   generateSmartNotesForVideo,
   extractConceptsAndRelationshipsForVideo,
+  generateQuizForSegment,
+  generateSegmentFlashcards,
+  generateSegmentDiagrams,
 } from './ai';
+import { FlowchartJSON, MindMapJSON } from '../diagrams';
+import { ProviderType } from '../llm';
 
 export interface IngestOptions {
   source?: 'manual' | 'chat';
@@ -15,9 +20,11 @@ export interface IngestOptions {
 }
 
 /**
- * Unified Shared Ingestion Pipeline
- * Used by both top-bar 'Add Video' button, dashboard search input, and Chat Assistant.
- * Deduplicates by youtube_video_id — cached ready videos are returned immediately without reprocessing.
+ * Unified Shared Ingestion Pipeline with Progressive Generation:
+ * - Divides transcript into chapters with Gemma 4 (task: split_transcript).
+ * - Generates Segment 1 completely first (4 quiz questions, mind map JSON, flowchart JSON).
+ * - Caches content in Prisma per segment.
+ * - Processes subsequent segments in the background one at a time.
  */
 export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {}) {
   const userId = options.userId || 'default_user';
@@ -29,7 +36,7 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
 
   console.log(`[INGEST] video_id=${videoId} source=${options.source || 'manual'}`);
 
-  // 1. Deduplication / Cache check (Critical - Part 12)
+  // 1. Deduplication / Cache check
   const existingVideo = await db.video.findUnique({
     where: { youtube_video_id: videoId },
     include: {
@@ -47,8 +54,6 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
   // Cache hit: already processed and stored in database
   if (existingVideo && existingVideo.status === 'ready') {
     console.log(`[CACHE] hit (loaded ${existingVideo.segments.length} segments, ${existingVideo.flashcards.length} flashcards from database for video_id=${videoId})`);
-    console.log(`[INGEST] ready (video_id=${videoId} cache_hit=true)`);
-    // Ensure user progress record exists
     await ensureUserProgress(existingVideo.id, userId);
     return {
       video: existingVideo,
@@ -89,25 +94,83 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
 
   // 3. Process video pipeline
   try {
-    // Step A: Fetch metadata (title, author) via oEmbed
     const meta = await fetchYouTubeMetadata(videoId);
     console.log(`[METADATA] fetched title="${meta.title}" channel="${meta.channel}"`);
 
-    // Step B: Fetch transcript with timestamps
     const { items: transcriptItems, fullText, estimatedDuration } = await fetchTranscript(videoId);
     console.log(`[TRANSCRIPT] fetched ${transcriptItems.length} transcript items, estimatedDuration=${estimatedDuration}s`);
 
     const totalDuration = estimatedDuration > 0 ? estimatedDuration : 480;
 
-    // Step C: Run AI Segmentation, Quizzes, and Transcript-Grounded Flashcards
+    // Step A: Split transcript into chapters via Gemma 4 (cloud: split_transcript)
     const aiResult = await generateSegmentsAndQuizzes(meta.title, transcriptItems, totalDuration);
-    console.log(`[AI] generation completed with ${aiResult.segments.length} segments and ${aiResult.flashcards.length} grounded flashcards`);
+    console.log(`[AI] split into ${aiResult.segments.length} segments`);
+
+    // Step B: Generate Segment 1 diagrams & 4 quiz questions immediately
+    const segment1Proposal = aiResult.segments[0];
+    let seg1Diagrams: {
+      flowchart: FlowchartJSON;
+      mindmap: MindMapJSON;
+      provider: ProviderType;
+      model: string;
+    } = {
+      flowchart: {
+        nodes: [{ id: 's1', label: segment1Proposal?.title || 'Chapter 1' }],
+        edges: [],
+      },
+      mindmap: {
+        topic: segment1Proposal?.title || 'Chapter 1',
+        children: [{ topic: 'Core Concept' }],
+      },
+      provider: 'local',
+      model: 'gemma4:e4b',
+    };
+
+    if (segment1Proposal) {
+      try {
+        seg1Diagrams = await generateSegmentDiagrams(
+          segment1Proposal.title,
+          segment1Proposal.summary
+        );
+      } catch (err: any) {
+        console.warn('[SEG 1 DIAGRAM GEN WARN]:', err.message);
+      }
+    }
+
+    // Ensure 4 questions for segment 1
+    let seg1Questions = segment1Proposal?.quiz_questions || [];
+    if (seg1Questions.length < 4 && segment1Proposal) {
+      try {
+        const qRes = await generateQuizForSegment(
+          segment1Proposal.title,
+          segment1Proposal.summary
+        );
+        if (qRes.questions.length >= 4) {
+          seg1Questions = qRes.questions;
+        }
+      } catch (e: any) {
+        console.warn('[SEG 1 QUIZ EXPANSION WARN]:', e.message);
+      }
+    }
+
+    // Step C: Generate 5 video-grounded flashcards
+    let flashcardsToPersist = aiResult.flashcards;
+    try {
+      const fcRes = await generateSegmentFlashcards(
+        meta.title,
+        aiResult.segments
+      );
+      if (fcRes.flashcards.length >= 5) {
+        flashcardsToPersist = fcRes.flashcards;
+      }
+    } catch (e: any) {
+      console.warn('[FLASHCARD GEN WARN]:', e.message);
+    }
 
     // Step D: Run AI Smart Notes Synthesis
     let smartNotes: any[] = [];
     try {
       smartNotes = await generateSmartNotesForVideo(meta.title, meta.channel, aiResult.segments, transcriptItems);
-      console.log(`[AI] Smart Notes synthesized: ${smartNotes.length} sections`);
     } catch (e: any) {
       console.warn(`[AI] Smart Notes generation non-fatal error:`, e.message);
     }
@@ -121,14 +184,13 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
         aiResult.segments,
         fullText
       );
-      console.log(`[AI] Knowledge Graph concepts extracted: ${extractedConcepts.length} concepts`);
     } catch (e: any) {
       console.warn(`[AI] Concept extraction non-fatal error:`, e.message);
     }
 
     // Step F: Persist everything to database in atomic transaction
     const updatedVideo = await db.$transaction(async (tx) => {
-      // Clear any prior partial segments/flashcards/notes if retrying failed video
+      // Clear any prior partial records if retrying
       await tx.quizQuestion.deleteMany({
         where: { segment: { video_id: video.id } },
       });
@@ -155,13 +217,13 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
         },
       });
 
-      let totalQuizzesPersisted = 0;
       const createdSegments: any[] = [];
-      const createdQuizzes: any[] = [];
-      const createdFlashcards: any[] = [];
 
-      // Insert Segments and Quizzes
-      for (const seg of aiResult.segments) {
+      // Insert Segments: Segment 1 is 'ready' with diagrams; Segments 2..N are 'pending'
+      for (let idx = 0; idx < aiResult.segments.length; idx++) {
+        const seg = aiResult.segments[idx];
+        const isSegment1 = idx === 0;
+
         const createdSeg = await tx.segment.create({
           data: {
             video_id: savedVideo.id,
@@ -170,29 +232,33 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
             summary: seg.summary,
             start_seconds: seg.start_seconds,
             end_seconds: seg.end_seconds,
+            generation_status: isSegment1 ? 'ready' : 'pending',
+            llm_provider: isSegment1 ? seg1Diagrams.provider : null,
+            flowchart_json: isSegment1 ? JSON.stringify(seg1Diagrams.flowchart) : null,
+            mindmap_json: isSegment1 ? JSON.stringify(seg1Diagrams.mindmap) : null,
           },
         });
         createdSegments.push(createdSeg);
 
-        // Insert Quiz Questions for this segment
-        for (const q of seg.quiz_questions) {
-          const createdQ = await tx.quizQuestion.create({
-            data: {
-              segment_id: createdSeg.id,
-              question: q.question,
-              options: JSON.stringify(q.options),
-              correct_answer: q.correct_answer,
-              explanation: q.explanation,
-            },
-          });
-          createdQuizzes.push(createdQ);
-          totalQuizzesPersisted++;
+        // If Segment 1, persist its quiz questions immediately
+        if (isSegment1) {
+          for (const q of seg1Questions) {
+            await tx.quizQuestion.create({
+              data: {
+                segment_id: createdSeg.id,
+                question: q.question,
+                options: JSON.stringify(q.options),
+                correct_answer: q.correct_answer,
+                explanation: q.explanation,
+              },
+            });
+          }
         }
       }
 
-      // Insert Video-Grounded Flashcards
-      for (const fc of aiResult.flashcards) {
-        const createdFc = await tx.flashcard.create({
+      // Insert Flashcards (5 items)
+      for (const fc of flashcardsToPersist.slice(0, 5)) {
+        await tx.flashcard.create({
           data: {
             video_id: savedVideo.id,
             front: fc.front,
@@ -200,7 +266,6 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
             mastered: false,
           },
         });
-        createdFlashcards.push(createdFc);
       }
 
       // Insert Smart Notes
@@ -218,137 +283,65 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
             section_type: note.section_type,
             title: note.title,
             content: note.content,
-            source_start_seconds: note.source_start_seconds ?? null,
-            source_end_seconds: note.source_end_seconds ?? null,
+            source_start_seconds: note.source_start_seconds,
+            source_end_seconds: note.source_end_seconds,
             order_index: i,
           },
         });
       }
 
-      // Insert Concepts & Relationships
-      const conceptRecordMap = new Map<string, any>();
-      for (const ec of extractedConcepts) {
-        const slug = ec.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-        const concept = await tx.concept.upsert({
-          where: { name: ec.name },
-          create: {
-            name: ec.name,
-            slug: `${slug}-${Math.random().toString(36).substring(2, 6)}`,
-            description: ec.description,
-            category: ec.category,
-          },
-          update: {
-            description: ec.description,
-            category: ec.category,
-          },
+      // Link Knowledge Graph Concepts
+      for (const rawConcept of extractedConcepts) {
+        let concept = await tx.concept.findUnique({
+          where: { name: rawConcept.name },
         });
-        conceptRecordMap.set(ec.name.toLowerCase(), concept);
 
-        // Link to Segment
-        for (const orderIdx of ec.segment_order_indices) {
-          const seg = createdSegments[orderIdx] || createdSegments[0];
-          if (seg) {
+        if (!concept) {
+          const slug = String(rawConcept.name)
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, '');
+
+          concept = await tx.concept.create({
+            data: {
+              name: rawConcept.name,
+              slug,
+              category: rawConcept.category,
+              description: rawConcept.description,
+            },
+          });
+        }
+
+        for (const orderIdx of rawConcept.segment_order_indices) {
+          const targetSeg = createdSegments[orderIdx];
+          if (targetSeg) {
             await tx.conceptSegment.upsert({
               where: {
                 concept_id_segment_id: {
                   concept_id: concept.id,
-                  segment_id: seg.id,
+                  segment_id: targetSeg.id,
                 },
               },
               create: {
                 concept_id: concept.id,
-                segment_id: seg.id,
-                source_start_seconds: seg.start_seconds,
-                source_end_seconds: seg.end_seconds,
+                segment_id: targetSeg.id,
               },
               update: {},
             });
           }
         }
-
-        // Initialize User Mastery for this concept
-        await tx.userConceptMastery.upsert({
-          where: {
-            user_id_concept_id: {
-              user_id: userId,
-              concept_id: concept.id,
-            },
-          },
-          create: {
-            user_id: userId,
-            concept_id: concept.id,
-            mastery_score: 0,
-            exposure_count: 0,
-            correct_count: 0,
-            wrong_count: 0,
-            last_seen_at: new Date(),
-          },
-          update: {},
-        });
       }
-
-      // Insert Concept Relationships
-      for (const ec of extractedConcepts) {
-        const sourceRecord = conceptRecordMap.get(ec.name.toLowerCase());
-        if (!sourceRecord) continue;
-
-        for (const rel of ec.related_concepts) {
-          const targetRecord =
-            conceptRecordMap.get(rel.target_name.toLowerCase()) ||
-            (await tx.concept.findFirst({
-              where: { name: { contains: rel.target_name } },
-            }));
-
-          if (targetRecord && targetRecord.id !== sourceRecord.id) {
-            try {
-              await tx.conceptRelationship.upsert({
-                where: {
-                  source_concept_id_target_concept_id_relationship_type: {
-                    source_concept_id: sourceRecord.id,
-                    target_concept_id: targetRecord.id,
-                    relationship_type: rel.relationship_type,
-                  },
-                },
-                create: {
-                  source_concept_id: sourceRecord.id,
-                  target_concept_id: targetRecord.id,
-                  relationship_type: rel.relationship_type,
-                  weight: 1.0,
-                },
-                update: {},
-              });
-            } catch (e: any) {
-              // Ignore duplicate
-            }
-          }
-        }
-      }
-
-      console.log(`[DB] persisted ${aiResult.segments.length} segments, ${totalQuizzesPersisted} quizzes, ${aiResult.flashcards.length} flashcards, ${smartNotes.length} notes, ${extractedConcepts.length} concepts`);
-
-      // Initialize default user progress record
-      await tx.userVideoProgress.upsert({
-        where: {
-          user_id_video_id: {
-            user_id: userId,
-            video_id: savedVideo.id,
-          },
-        },
-        create: {
-          user_id: userId,
-          video_id: savedVideo.id,
-          current_segment_index: 0,
-          completed_segment_ids: JSON.stringify([]),
-        },
-        update: {},
-      });
 
       return savedVideo;
     });
 
-    console.log(`[INGEST] ready (video_id=${videoId} status=ready)`);
+    // Ensure User Video Progress record exists
+    await ensureUserProgress(updatedVideo.id, userId);
 
-    // Return complete newly generated video
+    // Step G: Trigger background generation for remaining segments (segments 2..N)
+    triggerBackgroundSegmentGeneration(updatedVideo.id);
+
+    // Reload complete video object
     const finalVideo = await db.video.findUnique({
       where: { id: updatedVideo.id },
       include: {
@@ -357,24 +350,22 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
           include: { quiz_questions: true },
         },
         flashcards: true,
-        notes: {
-          orderBy: { order_index: 'asc' },
-        },
+        notes: { orderBy: { order_index: 'asc' } },
       },
     });
 
     return {
-      video: finalVideo || updatedVideo,
+      video: finalVideo,
       cached: false,
     };
   } catch (err: any) {
-    console.error(`[INGEST] failed (video_id=${videoId}):`, err.message);
+    console.error(`[INGEST ERROR] video_id=${videoId}:`, err);
 
     await db.video.update({
       where: { id: video.id },
       data: {
         status: 'failed',
-        error_reason: err.message || 'Unknown processing error',
+        error_reason: err?.message || 'Processing failed unexpectedly.',
       },
     });
 
@@ -383,7 +374,123 @@ export async function ingestVideo(youtubeUrl: string, options: IngestOptions = {
 }
 
 /**
- * Explicitly regenerates flashcards from the transcript for a video (Rule 17)
+ * Generates content for a single segment (4 quiz questions + flowchart + mindmap JSON)
+ * and updates its status in Prisma to 'ready'.
+ */
+export async function generateSingleSegmentContent(segmentId: string) {
+  const segment = await db.segment.findUnique({
+    where: { id: segmentId },
+    include: { video: true, quiz_questions: true },
+  });
+
+  if (!segment) return null;
+
+  // If already ready with flowchart and 4 questions, return immediately
+  if (
+    segment.generation_status === 'ready' &&
+    segment.flowchart_json &&
+    segment.quiz_questions.length >= 4
+  ) {
+    return segment;
+  }
+
+  // Mark generating
+  await db.segment.update({
+    where: { id: segment.id },
+    data: { generation_status: 'generating' },
+  });
+
+  try {
+    // 1. Generate 4 quiz questions
+    const quizRes = await generateQuizForSegment(
+      segment.title,
+      segment.summary || ''
+    );
+
+    // 2. Generate diagrams (flowchart & mind map JSON)
+    const diagramRes = await generateSegmentDiagrams(
+      segment.title,
+      segment.summary || ''
+    );
+
+    // 3. Persist in transaction
+    await db.$transaction(async (tx) => {
+      // Clear any partial quiz questions
+      await tx.quizQuestion.deleteMany({
+        where: { segment_id: segment.id },
+      });
+
+      for (const q of quizRes.questions) {
+        await tx.quizQuestion.create({
+          data: {
+            segment_id: segment.id,
+            question: q.question,
+            options: JSON.stringify(q.options),
+            correct_answer: q.correct_answer,
+            explanation: q.explanation,
+          },
+        });
+      }
+
+      await tx.segment.update({
+        where: { id: segment.id },
+        data: {
+          flowchart_json: JSON.stringify(diagramRes.flowchart),
+          mindmap_json: JSON.stringify(diagramRes.mindmap),
+          generation_status: 'ready',
+          llm_provider: diagramRes.provider,
+        },
+      });
+    });
+
+    return await db.segment.findUnique({
+      where: { id: segmentId },
+      include: { quiz_questions: true },
+    });
+  } catch (err: any) {
+    console.error(`[SEGMENT PROGRESSIVE GEN ERROR ${segmentId}]:`, err);
+    await db.segment.update({
+      where: { id: segment.id },
+      data: { generation_status: 'ready' },
+    });
+    return segment;
+  }
+}
+
+/**
+ * Processes pending segments sequentially in the background.
+ */
+export function triggerBackgroundSegmentGeneration(videoId: string) {
+  setTimeout(async () => {
+    try {
+      const pendingSegments = await db.segment.findMany({
+        where: {
+          video_id: videoId,
+          generation_status: 'pending',
+        },
+        orderBy: { order_index: 'asc' },
+      });
+
+      if (pendingSegments.length === 0) return;
+
+      console.log(`[BACKGROUND GEN] Starting progressive generation for ${pendingSegments.length} pending segments of video ${videoId}`);
+
+      for (const seg of pendingSegments) {
+        console.log(`[BACKGROUND GEN] Generating segment ${seg.order_index + 1}: "${seg.title}"...`);
+        await generateSingleSegmentContent(seg.id);
+        // Throttle slightly between segments to be gentle with local Ollama
+        await new Promise((r) => setTimeout(r, 1200));
+      }
+
+      console.log(`[BACKGROUND GEN] Finished all segments for video ${videoId}`);
+    } catch (err: any) {
+      console.warn(`[BACKGROUND GEN ERROR]:`, err.message);
+    }
+  }, 200);
+}
+
+/**
+ * Explicitly regenerates flashcards from the transcript for a video
  */
 export async function regenerateVideoFlashcards(videoId: string) {
   const video = await db.video.findUnique({
@@ -406,7 +513,7 @@ export async function regenerateVideoFlashcards(videoId: string) {
       where: { video_id: video.id },
     });
 
-    for (const fc of validatedCards) {
+    for (const fc of validatedCards.slice(0, 5)) {
       await tx.flashcard.create({
         data: {
           video_id: video.id,
